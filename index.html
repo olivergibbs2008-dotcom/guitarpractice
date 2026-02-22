@@ -3,347 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StrumTrack: Blueprint</title>
+    <title>Guitar Practice Lab</title>
     <style>
-        :root { --bg: #05070a; --glass: rgba(20, 25, 35, 0.95); --accent: #00f2ff; --secondary: #7000ff; --text: #ffffff; --muted: #64748b; --danger: #ff4757; --success: #2ed573; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: #05070a; color: var(--text); margin: 0; padding: 20px 20px 100px; overflow-x: hidden; }
+        :root { --bg: #05070a; --glass: rgba(20, 25, 35, 0.95); --accent: #00f2ff; --secondary: #7000ff; --text: #ffffff; --muted: #64748b; --danger: #ff4757; --success: #2ed573; --border: rgba(255,255,255,0.1); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px 15px 110px; overflow-x: hidden; }
         
-        .container { max-width: 450px; margin: 0 auto; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        .container { max-width: 500px; margin: 0 auto; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border-radius: 24px; padding: 22px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
         
-        /* Navigation (Enlarged for Mobile) */
-        .tab-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 85px; background: rgba(10, 15, 25, 0.98); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #1e293b; z-index: 1000; padding-bottom:env(safe-area-inset-bottom); }
-        .tab-item { color: var(--muted); font-size: 0.8rem; font-weight: 600; text-align: center; cursor: pointer; flex: 1; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .tab-icon { font-size: 1.8rem; }
-        .tab-item.active { color: var(--accent); transform: translateY(-4px); }
+        /* Navigation */
+        .tab-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 95px; background: rgba(10, 15, 25, 0.98); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .tab-item { color: var(--muted); font-size: 0.75rem; font-weight: 700; text-align: center; flex: 1; transition: 0.3s; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .tab-icon { font-size: 1.8rem; margin-bottom: 4px; opacity: 0.6; }
+        .tab-item.active { color: var(--accent); }
+        .tab-item.active .tab-icon { opacity: 1; transform: scale(1.1); }
         
         .screen { display: none; }
-        .screen.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .screen.active { display: block; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* General UI */
-        h2 { margin-top: 0; font-weight: 800; letter-spacing: -0.5px; }
-        .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 8px; display: block; }
-        button { border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: active 0.1s; }
-        button:active { transform: scale(0.98); opacity: 0.9; }
-        .btn-main { background: var(--accent); color: #000; padding: 14px 20px; width: 100%; font-size: 1rem; }
-        .btn-outline { background: transparent; border: 2px solid var(--accent); color: var(--accent); padding: 10px; width: 100%; border-radius: 10px; margin-bottom: 8px; }
+        /* Form Elements */
+        h2 { margin: 0 0 15px 5px; font-weight: 900; letter-spacing: -1px; font-size: 1.8rem; color: var(--accent); }
+        .btn-main { background: var(--accent); color: #000; padding: 18px; border-radius: 16px; width: 100%; font-weight: 800; border: none; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        .btn-sec { background: var(--secondary); color: #fff; padding: 14px; border-radius: 14px; width: 100%; border: none; font-weight: 700; cursor: pointer; }
+        input, select, textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 16px; border-radius: 14px; font-size: 1rem; margin-bottom: 12px; }
         
-        input[type="text"], input[type="number"], select, textarea { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #1e293b; color: white; padding: 14px; border-radius: 12px; font-size: 1rem; margin-bottom: 12px; }
-        textarea { height: 200px; font-family: 'Courier New', monospace; resize: none; }
+        /* Progress & Tools */
+        .progress-bar { width: 100%; height: 8px; background: #1a1f26; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 1s ease; }
+        .timer-display { font-size: 4.5rem; font-weight: 900; color: var(--text); text-align: center; margin: 5px 0; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
         
-        /* Specifics */
-        .tuner-meter { width: 100%; height: 12px; background: #1e293b; border-radius: 6px; position: relative; margin: 25px 0; overflow: hidden; }
-        .tuner-needle { position: absolute; top: 0; left: 50%; width: 5px; height: 100%; background: var(--accent); transform: translateX(-50%); transition: left 0.1s ease-out; }
-        .timer-display { font-size: 4.5rem; font-weight: 900; color: var(--secondary); text-align: center; margin: 10px 0; font-variant-numeric: tabular-nums; }
+        /* Video/Camera */
+        #videoPreview { width: 100%; border-radius: 16px; background: #000; margin-bottom: 12px; display: none; border: 2px solid var(--border); }
+        .rec-dot { height: 12px; width: 12px; background: #ff4757; border-radius: 50%; display: inline-block; margin-right: 8px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .phase-detail-box { background: rgba(0, 242, 255, 0.05); padding: 15px; border-radius: 16px; border-left: 4px solid var(--accent); margin-bottom: 15px; }
         
-        .routine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        /* Metronome Mini */
+        .metro-box { display: flex; align-items: center; gap: 10px; margin-top: 15px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 14px; }
     </style>
 </head>
 <body>
 
 <div class="container">
 
-    <div id="tuner" class="screen">
-        <h2>Live Tuner</h2>
-        <div class="glass-card" style="text-align:center;">
-            <div id="noteName" style="font-size: 5rem; font-weight: 900; color: var(--accent); margin: 10px 0;">--</div>
-            <div class="tuner-meter"><div id="needle" class="tuner-needle"></div></div>
-            <div id="freq" style="font-family:monospace; color:var(--muted); margin-bottom: 20px;">Ready...</div>
-            <button class="btn-main" id="tunerBtn" onclick="toggleTuner()">TURN ON TUNER</button>
-        </div>
-    </div>
-
     <div id="plan" class="screen active">
-        <h2>24-Week Blueprint</h2>
+        <h2>Practice Plan</h2>
         <div class="glass-card">
-            <span class="label">Current Week Selection</span>
-            <select id="weekSelect" onchange="updateBlueprintUI()">
-                </select>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.8rem; font-weight:800; color:var(--muted);">TOTAL JOURNEY</span>
+                <span id="progressText" style="font-size:0.8rem; color:var(--accent);">0%</span>
+            </div>
+            <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
             
-            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--secondary);">
-                <span class="label" style="color:var(--secondary)">Phase Focus</span>
-                <div id="phaseDisplay" style="font-weight: bold; font-size: 1.1rem;">Phase 1: Technical Ceiling Reset</div>
+            <label style="font-size:0.7rem; color:var(--muted); margin-top:15px; display:block;">CURRENT WEEK</label>
+            <select id="weekSelect" onchange="updateBlueprint()"></select>
+            
+            <div class="phase-detail-box">
+                <div id="phaseTitle" style="font-weight: 800; color: var(--accent); margin-bottom: 5px;">Phase 1</div>
+                <div id="phaseDesc" style="font-size: 0.85rem; opacity: 0.8;">Focus content...</div>
             </div>
         </div>
 
         <div class="glass-card">
-            <span class="label">Weekly Tracking Metrics</span>
-            <input type="number" id="metricBpm" placeholder="Top Clean BPM (e.g. 120)">
-            <input type="text" id="metricMechanic" placeholder="Weak Mechanic Identified">
-            <select id="metricRecord">
-                <option value="No">Recording Completed? - No</option>
-                <option value="Yes">Recording Completed? - Yes</option>
-            </select>
-            <input type="text" id="metricNotes" placeholder="Quick Notes...">
-            <button class="btn-main" onclick="saveMetrics()">SAVE WEEKLY METRICS</button>
-            <div id="saveConfirm" style="color: var(--success); text-align: center; margin-top: 10px; font-size: 0.8rem; display: none;">Data Saved Successfully!</div>
-        </div>
-
-        <div class="glass-card">
-            <span class="label">Master Video Study List</span>
-            <div id="videoChecklist"></div>
+            <span class="label" style="font-size:0.7rem; color:var(--muted); font-weight:bold;">WEEKLY METRICS</span>
+            <input type="number" id="bpm" placeholder="Top Clean BPM">
+            <input type="text" id="weakness" placeholder="Weak Mechanic (e.g. Upstrokes)">
+            <textarea id="weekNotes" placeholder="Notes on this week's progress..." style="height:80px;"></textarea>
+            <button class="btn-main" onclick="saveData()">SAVE PROGRESS</button>
         </div>
     </div>
 
     <div id="practice" class="screen">
-        <h2>Daily Routine</h2>
-        
-        <div class="glass-card">
-            <span class="label">30-Minute Structure</span>
-            <div class="routine-grid">
-                <button class="btn-outline" onclick="setTimer(4, 'Neural Warmup')">4m - Neural Warmup</button>
-                <button class="btn-outline" onclick="setTimer(8, 'Technical Overload')">8m - Tech Overload</button>
-                <button class="btn-outline" onclick="setTimer(6, 'Harmonic Intel')">6m - Harmonic Intel</button>
-                <button class="btn-outline" onclick="setTimer(6, 'Rhythmic Control')">6m - Rhythmic Control</button>
-                <button class="btn-outline" style="grid-column: span 2;" onclick="setTimer(6, 'Composition Constraint')">6m - Composition Constraint</button>
+        <h2>Practice Lab</h2>
+        <div class="glass-card" style="text-align:center;">
+            <div id="routineLabel" style="color:var(--muted); font-weight:bold; font-size:0.9rem;">SELECT A BLOCK</div>
+            <div class="timer-display" id="timer">00:00</div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+                <button class="btn-sec" onclick="setTimer(4, 'Neural Warmup')">4m Warmup</button>
+                <button class="btn-sec" onclick="setTimer(8, 'Tech Overload')">8m Tech</button>
+                <button class="btn-sec" onclick="setTimer(6, 'Harmonic Intel')">6m Harm</button>
+                <button class="btn-sec" onclick="setTimer(6, 'Rhythmic')">6m Rhythm</button>
+            </div>
+            
+            <button class="btn-main" id="timerControl" onclick="toggleTimer()">START SESSION</button>
+
+            <div class="metro-box">
+                <span style="font-weight:bold; color:var(--accent); min-width:35px;" id="bpmDisplay">120</span>
+                <input type="range" min="40" max="220" value="120" id="bpmSlider" oninput="updateBpm(this.value)" style="margin:0; flex-grow:1;">
+                <button onclick="toggleMetro()" id="metroBtn" style="background:var(--accent); border:none; border-radius:8px; padding:8px 12px; font-weight:bold; cursor:pointer;">CLICK</button>
             </div>
         </div>
 
-        <div class="glass-card" style="text-align:center;">
-            <div id="sessionFocus" style="color:var(--muted); font-weight:bold;">Custom Session</div>
-            <div class="timer-display" id="timerDisplay">00:00</div>
-            
-            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px;">
-                <button onclick="adjustTime(-1)" style="padding:10px 15px; border-radius:10px; background:#1e293b; color:white; border:none; font-weight:bold;">-1m</button>
-                <button onclick="adjustTime(1)" style="padding:10px 15px; border-radius:10px; background:#1e293b; color:white; border:none; font-weight:bold;">+1m</button>
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-weight:900;"><div id="recIndicator" class="rec-dot" style="display:none;"></div>RECORDER</span>
+                <button id="camBtn" onclick="toggleCamera()" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 12px; border-radius:10px; font-weight:bold; font-size:0.7rem;">OPEN CAM</button>
             </div>
-
-            <button class="btn-main" style="background:var(--secondary); color:white;" id="timerBtn" onclick="toggleTimer()">START SESSION</button>
+            <video id="videoPreview" autoplay muted playsinline></video>
+            <div id="downloadContainer"></div>
+            <button id="recBtn" class="btn-main" style="display:none; background:var(--danger); color:white;" onclick="toggleRecording()">START RECORDING</button>
         </div>
     </div>
 
     <div id="write" class="screen">
         <h2>Scratchpad</h2>
         <div class="glass-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-                <span class="label" style="margin:0;">Notes & Tabs</span>
-                <span id="writeSaveInd" style="color:var(--success); font-size:0.7rem; display:none;">Saved!</span>
+            <textarea id="notes" placeholder="Paste lyrics, tabs, or riff ideas here... saves automatically." oninput="saveNotes()" style="height:350px;"></textarea>
+            <div id="saveStat" style="text-align:right; font-size:0.7rem; color:var(--success); font-weight:bold; display:none;">SAVED TO DISK</div>
+        </div>
+    </div>
+
+    <div id="tuner" class="screen">
+        <h2>Precision Tuner</h2>
+        <div class="glass-card" style="text-align:center; padding: 40px 20px;">
+            <div id="note" style="font-size: 6rem; font-weight: 900; color: var(--accent); line-height:1;">--</div>
+            <div style="width:100%; height:12px; background:rgba(255,255,255,0.05); border-radius:6px; position:relative; margin:40px 0; overflow:hidden;">
+                <div id="needle" style="position:absolute; left:50%; width:6px; height:100%; background:var(--accent); transition:0.1s; transform: translateX(-50%);"></div>
             </div>
-            <textarea id="notes" placeholder="Paste tabs, lyrics, or scale intervals here..." oninput="saveNotes()"></textarea>
-            <p style="font-size:0.75rem; color:var(--muted); margin:0;">Saves to your device automatically.</p>
+            <button class="btn-main" id="tunerToggle" onclick="toggleTuner()">ENABLE MICROPHONE</button>
         </div>
     </div>
 
 </div>
 
 <nav class="tab-bar">
-    <div class="tab-item" onclick="showScreen('tuner', this)">
-        <span class="tab-icon">🎸</span><span>Tuner</span>
-    </div>
-    <div class="tab-item active" onclick="showScreen('plan', this)">
-        <span class="tab-icon">📋</span><span>Plan</span>
-    </div>
-    <div class="tab-item" onclick="showScreen('practice', this)">
-        <span class="tab-icon">⏱️</span><span>Practice</span>
-    </div>
-    <div class="tab-item" onclick="showScreen('write', this)">
-        <span class="tab-icon">📝</span><span>Write</span>
-    </div>
+    <div class="tab-item active" onclick="showScreen('plan', this)"><span class="tab-icon">📋</span>PLAN</div>
+    <div class="tab-item" onclick="showScreen('practice', this)"><span class="tab-icon">🧪</span>LAB</div>
+    <div class="tab-item" onclick="showScreen('write', this)"><span class="tab-icon">✍️</span>WRITE</div>
+    <div class="tab-item" onclick="showScreen('tuner', this)"><span class="tab-icon">🎯</span>TUNER</div>
 </nav>
 
 <script>
-    // --- Navigation ---
+    // Navigation
     const showScreen = (id, el) => {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
+        if(id !== 'tuner' && tOn) toggleTuner(); // Auto-off tuner for battery
     };
 
-    // --- Blueprint Logic (24 Weeks) ---
-    const phases = [
-        { weeks: [1,2,3,4], name: "Phase 1: Technical Ceiling Reset" },
-        { weeks: [5,6,7,8], name: "Phase 2: Harmonic Expansion" },
-        { weeks: [9,10,11,12], name: "Phase 3: Rhythmic Authority" },
-        { weeks: [13,14,15,16], name: "Phase 4: Speed + Musical Control" },
-        { weeks: [17,18,19,20], name: "Phase 5: Modern Rock Mastery" },
-        { weeks: [21,22,23,24], name: "Phase 6: Professional Integration" }
+    // Blueprint Data
+    const phaseData = [
+        { name: "Phase 1: Technical Ceiling Reset", desc: "Weeks 1-4: Strict alternate picking, scale mapping, metronome on Beat 1." },
+        { name: "Phase 2: Harmonic Expansion", desc: "Weeks 5-8: Modal fluency (Dorian, Mixolydian, Lydian). Focus on target tones." },
+        { name: "Phase 3: Rhythmic Authority", desc: "Weeks 9-12: Odd groupings, 5/4 and 7/8 feel control. Rhythmic displacement." },
+        { name: "Phase 4: Speed + Musical Control", desc: "Weeks 13-16: Burst training, advanced arpeggios. RECORDING REQUIRED." },
+        { name: "Phase 5: Modern Rock Mastery", desc: "Weeks 17-20: Hybrid picking, upper-structure triads. Modern phrasing." },
+        { name: "Phase 6: Professional Integration", desc: "Weeks 21-24: Full-system improvisation, motif development, complete writing." }
     ];
 
-    const weekSelect = document.getElementById('weekSelect');
+    const select = document.getElementById('weekSelect');
     for(let i=1; i<=24; i++) {
-        let opt = document.createElement('option');
-        opt.value = i; opt.innerText = `Week ${i}`;
-        weekSelect.appendChild(opt);
+        let opt = document.createElement('option'); opt.value = i; opt.innerText = `Week ${i}`;
+        select.appendChild(opt);
     }
 
-    function updateBlueprintUI() {
-        const currentWeek = parseInt(weekSelect.value);
-        const phase = phases.find(p => p.weeks.includes(currentWeek));
-        document.getElementById('phaseDisplay').innerText = phase ? phase.name : "";
+    function updateBlueprint() {
+        const week = parseInt(select.value);
+        const phaseIdx = Math.floor((week - 1) / 4);
+        document.getElementById('phaseTitle').innerText = phaseData[phaseIdx].name;
+        document.getElementById('phaseDesc').innerText = phaseData[phaseIdx].desc;
         
-        const data = JSON.parse(localStorage.getItem('gtr_blueprint') || '{}');
-        const weekData = data[currentWeek] || { bpm: '', mechanic: '', record: 'No', notes: '' };
-        
-        document.getElementById('metricBpm').value = weekData.bpm;
-        document.getElementById('metricMechanic').value = weekData.mechanic;
-        document.getElementById('metricRecord').value = weekData.record;
-        document.getElementById('metricNotes').value = weekData.notes;
-    }
+        // Progress UI
+        const percent = Math.round((week/24)*100);
+        document.getElementById('progressFill').style.width = percent + "%";
+        document.getElementById('progressText').innerText = percent + "% COMPLETE";
 
-    function saveMetrics() {
-        const currentWeek = parseInt(weekSelect.value);
-        const data = JSON.parse(localStorage.getItem('gtr_blueprint') || '{}');
-        data[currentWeek] = {
-            bpm: document.getElementById('metricBpm').value,
-            mechanic: document.getElementById('metricMechanic').value,
-            record: document.getElementById('metricRecord').value,
-            notes: document.getElementById('metricNotes').value
+        const saved = JSON.parse(localStorage.getItem('gtr_master_log') || '{}');
+        const weekData = saved[week] || { bpm: '', weak: '', notes: '' };
+        document.getElementById('bpm').value = weekData.bpm;
+        document.getElementById('weakness').value = weekData.weak;
+        document.getElementById('weekNotes').value = weekData.notes || '';
+    }
+    function saveData() {
+        const week = select.value;
+        const saved = JSON.parse(localStorage.getItem('gtr_master_log') || '{}');
+        saved[week] = { 
+            bpm: document.getElementById('bpm').value, 
+            weak: document.getElementById('weakness').value,
+            notes: document.getElementById('weekNotes').value 
         };
-        localStorage.setItem('gtr_blueprint', JSON.stringify(data));
-        
-        const confirm = document.getElementById('saveConfirm');
-        confirm.style.display = 'block';
-        setTimeout(() => confirm.style.display = 'none', 2000);
+        localStorage.setItem('gtr_master_log', JSON.stringify(saved));
+        alert("Progress Saved!");
     }
-    updateBlueprintUI();
+    updateBlueprint();
 
-    // --- Video Study Checklist ---
-    const studyVideos = [
-        { id: "v1", title: "Troy Grady - Cracking the Code", link: "https://www.youtube.com/results?search_query=troy+grady+cracking+the+code" },
-        { id: "v2", title: "Rick Beato - Modes Explained", link: "https://www.youtube.com/results?search_query=rick+beato+modes+explained" },
-        { id: "v3", title: "Paul Gilbert - Alternate Picking", link: "https://www.youtube.com/results?search_query=paul+gilbert+alternate+picking+lesson" },
-        { id: "v4", title: "Bernth - Advanced Legato", link: "https://www.youtube.com/results?search_query=bernth+legato+workout" },
-        { id: "v5", title: "Steve Stine - String Skipping", link: "https://www.youtube.com/results?search_query=steve+stine+string+skipping" },
-        { id: "v6", title: "Odd Time Riff (7/8 & 5/4)", link: "https://www.youtube.com/results?search_query=7%2F8+rock+backing+track" },
-        { id: "v7", title: "Drum Loop Practice Tracks", link: "https://www.youtube.com/results?search_query=rock+drum+loop+practice" }
-    ];
-
-    function renderVideos() {
-        const savedState = JSON.parse(localStorage.getItem('gtr_videos') || '{}');
-        const container = document.getElementById('videoChecklist');
-        container.innerHTML = studyVideos.map(v => `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <input type="checkbox" id="${v.id}" ${savedState[v.id] ? 'checked' : ''} onchange="saveVideoState('${v.id}')" style="width: 20px; height: 20px; accent-color: var(--accent); margin:0;">
-                    <label for="${v.id}" style="font-size: 0.9rem; font-weight: 500; cursor: pointer; ${savedState[v.id] ? 'text-decoration: line-through; color: var(--muted);' : ''}">${v.title}</label>
-                </div>
-                <a href="${v.link}" target="_blank" style="text-decoration: none; font-size: 1.4rem;">▶️</a>
-            </div>
-        `).join('');
-    }
-
-    function saveVideoState(id) {
-        const savedState = JSON.parse(localStorage.getItem('gtr_videos') || '{}');
-        savedState[id] = document.getElementById(id).checked;
-        localStorage.setItem('gtr_videos', JSON.stringify(savedState));
-        renderVideos(); 
-    }
-    renderVideos();
-
-    // --- Daily Routine Timer Logic ---
+    // Timer Logic
     let tLeft = 0, tID, tActive = false;
-    let baseMins = 0;
-
-    function setTimer(mins, focusText) {
-        if(tActive) return alert("Stop current session first!");
-        baseMins = mins;
-        tLeft = mins * 60;
-        document.getElementById('sessionFocus').innerText = focusText;
-        renderT();
+    function setTimer(m, txt) { 
+        tLeft = m * 60; 
+        document.getElementById('routineLabel').innerText = txt.toUpperCase();
+        renderT(); 
     }
-
-    function adjustTime(change) {
-        if(tActive) return;
-        baseMins = Math.max(1, baseMins + change);
-        tLeft = baseMins * 60;
-        document.getElementById('sessionFocus').innerText = "Custom Session";
-        renderT();
+    function renderT() {
+        const m = Math.floor(tLeft/60), s = tLeft%60;
+        document.getElementById('timer').innerText = `${m}:${s<10?'0'+s:s}`;
     }
-
-    const toggleTimer = () => {
-        if(baseMins === 0) return alert("Select a routine block or add minutes first.");
-        if (!tActive) {
-            tActive = true; 
-            tID = setInterval(() => {
+    function toggleTimer() {
+        if(!tActive) {
+            if(tLeft === 0) return alert("Select a block first!");
+            tActive = true; tID = setInterval(() => {
                 tLeft--; renderT();
-                if (tLeft <= 0) { 
-                    clearInterval(tID); 
-                    tActive = false;
-                    document.getElementById('timerBtn').innerText = "START SESSION";
-                    alert("Block Complete! Time for the next one."); 
-                }
+                if(tLeft<=0) { clearInterval(tID); tActive = false; alert("Block Complete!"); }
             }, 1000);
-            document.getElementById('timerBtn').innerText = "PAUSE";
-        } else { 
-            clearInterval(tID); 
-            tActive = false; 
-            document.getElementById('timerBtn').innerText = "RESUME"; 
-        }
-    };
-
-    const renderT = () => {
-        const m = Math.floor(tLeft / 60); const s = tLeft % 60;
-        document.getElementById('timerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-    };
-
-    // --- Tuner Logic (With strict On/Off) ---
-    let tCtx, tAnalys, tData, micStream;
-    let isTunerOn = false;
-    const nNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    
-    async function toggleTuner() {
-        if (isTunerOn) {
-            // Turn Off completely
-            if(micStream) micStream.getTracks().forEach(track => track.stop());
-            if(tCtx && tCtx.state !== 'closed') await tCtx.close();
-            isTunerOn = false;
-            document.getElementById('tunerBtn').innerText = "TURN ON TUNER";
-            document.getElementById('tunerBtn').style.background = "var(--accent)";
-            document.getElementById('freq').innerText = "Off";
-            document.getElementById('noteName').innerText = "--";
-            document.getElementById('needle').style.left = "50%";
-            document.getElementById('needle').style.background = "var(--accent)";
-        } else {
-            // Turn On
-            try {
-                tCtx = new (window.AudioContext || window.webkitAudioContext)();
-                micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const source = tCtx.createMediaStreamSource(micStream);
-                tAnalys = tCtx.createAnalyser();
-                tAnalys.fftSize = 4096;
-                source.connect(tAnalys);
-                tData = new Float32Array(tAnalys.frequencyBinCount);
-                
-                isTunerOn = true;
-                document.getElementById('tunerBtn').innerText = "TURN OFF TUNER";
-                document.getElementById('tunerBtn').style.background = "var(--danger)";
-                tickTuner();
-            } catch(e) { alert("Microphone access is required for the tuner."); }
-        }
+            document.getElementById('timerControl').innerText = "PAUSE";
+        } else { clearInterval(tID); tActive = false; document.getElementById('timerControl').innerText = "RESUME"; }
     }
 
-    function tickTuner() {
-        if(!isTunerOn) return; 
+    // Metronome Logic
+    let mCtx, mPlay = false, mBpm = 120, nextBeat = 0, mID;
+    function updateBpm(v) { mBpm = v; document.getElementById('bpmDisplay').innerText = v; }
+    function toggleMetro() {
+        if(!mCtx) mCtx = new (window.AudioContext || window.webkitAudioContext)();
+        mPlay = !mPlay;
+        if(mPlay) { nextBeat = mCtx.currentTime; scheduler(); document.getElementById('metroBtn').innerText = "STOP"; }
+        else { clearTimeout(mID); document.getElementById('metroBtn').innerText = "CLICK"; }
+    }
+    function scheduler() {
+        while(nextBeat < mCtx.currentTime + 0.1) {
+            const osc = mCtx.createOscillator();
+            const gain = mCtx.createGain();
+            osc.frequency.value = 880;
+            gain.gain.exponentialRampToValueAtTime(1, nextBeat);
+            gain.gain.exponentialRampToValueAtTime(0.001, nextBeat + 0.05);
+            osc.connect(gain); gain.connect(mCtx.destination);
+            osc.start(nextBeat); osc.stop(nextBeat + 0.05);
+            nextBeat += 60 / mBpm;
+        }
+        mID = setTimeout(scheduler, 25);
+    }
+
+    // Camera & Recording
+    let mediaRecorder, chunks = [], stream;
+    async function toggleCamera() {
+        const video = document.getElementById('videoPreview');
+        if(!stream) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('recBtn').style.display = 'block';
+                document.getElementById('camBtn').innerText = "CLOSE CAM";
+            } catch(e) { alert("Camera access denied."); }
+        } else {
+            stream.getTracks().forEach(t => t.stop()); stream = null;
+            video.style.display = 'none';
+            document.getElementById('recBtn').style.display = 'none';
+            document.getElementById('camBtn').innerText = "OPEN CAM";
+        }
+    }
+    function toggleRecording() {
+        const btn = document.getElementById('recBtn');
+        const dot = document.getElementById('recIndicator');
+        if(!mediaRecorder || mediaRecorder.state === 'inactive') {
+            chunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `practice_week_${select.value}.mp4`;
+                a.innerText = "DOWNLOAD RECORDING";
+                a.className = "btn-main";
+                a.style.cssText = "display:block; margin-top:10px; text-decoration:none; background:var(--success); color:#000; text-align:center;";
+                document.getElementById('downloadContainer').innerHTML = '';
+                document.getElementById('downloadContainer').appendChild(a);
+            };
+            mediaRecorder.start();
+            btn.innerText = "STOP RECORDING"; dot.style.display = 'inline-block';
+        } else { mediaRecorder.stop(); btn.innerText = "START RECORDING"; dot.style.display = 'none'; }
+    }
+
+    // Tuner
+    let tCtx, tAnalys, tData, tStream, tOn = false;
+    async function toggleTuner() {
+        const btn = document.getElementById('tunerToggle');
+        if(!tOn) {
+            try {
+                tCtx = new AudioContext();
+                tStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                tCtx.createMediaStreamSource(tStream).connect(tAnalys = tCtx.createAnalyser());
+                tAnalys.fftSize = 4096;
+                tData = new Float32Array(tAnalys.frequencyBinCount);
+                tOn = true; btn.innerText = "STOP TUNER"; btn.style.background = "var(--danger)";
+                tick();
+            } catch(e) { alert("Mic required."); }
+        } else {
+            if(tStream) tStream.getTracks().forEach(t => t.stop());
+            if(tCtx) tCtx.close();
+            tOn = false; btn.innerText = "ENABLE MICROPHONE"; btn.style.background = "var(--accent)";
+            document.getElementById('note').innerText = "--";
+            document.getElementById('needle').style.left = "50%";
+        }
+    }
+    function tick() {
+        if(!tOn) return;
         tAnalys.getFloatFrequencyData(tData);
         let maxV = -Infinity, maxB = -1;
-        for (let i = 0; i < tData.length; i++) { if (tData[i] > maxV) { maxV = tData[i]; maxB = i; } }
+        for(let i=0; i<tData.length; i++) if(tData[i]>maxV) { maxV=tData[i]; maxB=i; }
         let f = maxB * tCtx.sampleRate / tAnalys.fftSize;
-        if (maxV > -60 && f > 40 && f < 1000) {
-            document.getElementById('freq').innerText = f.toFixed(1) + " Hz";
-            let p = 12 * (Math.log2(f / 440)) + 69;
-            let n = Math.round(p) % 12;
-            document.getElementById('noteName').innerText = nNames[n];
-            let d = (p - Math.round(p)) * 100;
-            document.getElementById('needle').style.left = (50 + d/2) + "%";
-            document.getElementById('needle').style.background = Math.abs(d) < 5 ? "var(--success)" : "var(--danger)";
+        if(f > 40 && f < 1000 && maxV > -60) {
+            let p = 12 * Math.log2(f/440) + 69;
+            document.getElementById('note').innerText = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"][Math.round(p)%12];
+            let diff = (p - Math.round(p)) * 50;
+            document.getElementById('needle').style.left = (50 + diff) + "%";
+            document.getElementById('needle').style.background = Math.abs(diff) < 5 ? "var(--success)" : "var(--accent)";
         }
-        requestAnimationFrame(tickTuner);
+        requestAnimationFrame(tick);
     }
 
-    // --- Scratchpad Logic ---
-    let saveTimeout;
-    const saveNotes = () => {
-        localStorage.setItem('gtr_notes_final', document.getElementById('notes').value);
-        const ind = document.getElementById('writeSaveInd');
-        ind.style.display = 'block';
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => ind.style.display = 'none', 1500);
-    };
-    document.getElementById('notes').value = localStorage.getItem('gtr_notes_final') || '';
-
+    // Scratchpad
+    function saveNotes() { 
+        localStorage.setItem('gtr_lab_notes', document.getElementById('notes').value); 
+        const s = document.getElementById('saveStat'); s.style.display = 'block';
+        setTimeout(() => s.style.display = 'none', 1000);
+    }
+    document.getElementById('notes').value = localStorage.getItem('gtr_lab_notes') || '';
 </script>
 </body>
 </html>
