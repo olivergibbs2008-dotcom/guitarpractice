@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Practice Lab: Omni-Architect</title>
+    <title>Practice Lab: Complete Master System</title>
     <style>
         :root { --bg: #030508; --glass: rgba(15, 20, 30, 0.95); --accent: #00f2ff; --secondary: #7000ff; --text: #e0e6ed; --muted: #64748b; --danger: #ff4757; --success: #2ed573; --border: rgba(0, 242, 255, 0.2); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', -apple-system, sans-serif; }
-        body { background: var(--bg); color: var(--text); margin: 0; padding: 10px 10px 110px; line-height: 1.5; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding: 10px 10px 110px; line-height: 1.5; overflow-x: hidden; }
+        
         .container { max-width: 480px; margin: 0 auto; }
         .glass-card { background: var(--glass); backdrop-filter: blur(25px); border-radius: 24px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        
         .custom-label { font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: block; }
         select, input, textarea { width: 100%; background: #0a0f18; border: 2px solid var(--border); color: var(--text); padding: 14px; border-radius: 16px; font-size: 1rem; margin-bottom: 12px; transition: 0.2s; outline: none; }
+        textarea { min-height: 120px; line-height: 1.6; resize: vertical; border: 1px solid var(--border); background: rgba(0,0,0,0.4); }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,242,255,0.15); }
         
-        /* Tab Navigation */
         .tab-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 85px; background: rgba(5, 8, 12, 0.98); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
         .tab-item { color: var(--muted); font-size: 0.6rem; font-weight: 800; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
         .tab-icon { font-size: 1.5rem; margin-bottom: 4px; opacity: 0.4; }
@@ -21,70 +24,111 @@
         .tab-item.active .tab-icon { opacity: 1; filter: drop-shadow(0 0 5px var(--accent)); }
         
         .screen { display: none; }
-        .screen.active { display: block; }
+        .screen.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .btn-primary { background: var(--accent); color: #000; width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; font-size: 1rem; cursor: pointer; }
-        .btn-voice { background: var(--secondary); color: white; border: none; padding: 8px 15px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; margin-bottom: 10px; cursor: pointer; }
+        .btn-primary { background: var(--accent); color: #000; width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,242,255,0.2); }
+        .btn-pill { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 14px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+        .btn-voice { background: var(--secondary); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 4px 15px rgba(112, 0, 255, 0.4); }
         
-        /* Heat Map */
-        .heatmap { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
-        .heat-box { width: 18px; height: 18px; border-radius: 3px; background: rgba(255,255,255,0.05); }
-        .heat-low { background: #004d4d; }
-        .heat-med { background: #009999; }
-        .heat-high { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-
-        .timer-val { font-size: 5rem; font-weight: 900; text-align: center; margin: 10px 0; letter-spacing: -3px; }
-        #vPrev { width: 100%; border-radius: 20px; display: none; transform: scaleX(-1); margin-top: 10px; border: 1px solid var(--border); }
+        .timer-val { font-size: 5rem; font-weight: 900; text-align: center; font-variant-numeric: tabular-nums; margin: 10px 0; letter-spacing: -3px; color: white; }
+        .drill-guide { background: rgba(0,242,255,0.05); border-radius: 12px; padding: 15px; margin-top: 10px; font-size: 0.85rem; color: #cbd5e1; border-left: 3px solid var(--accent); line-height: 1.5; }
+        
+        #vPrev { width: 100%; border-radius: 20px; border: 1px solid var(--border); display: none; transform: scaleX(-1); margin-top: 10px; }
+        
+        /* Heatmap Styles */
+        .progress-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-top: 8px; margin-bottom: 15px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--secondary), var(--accent)); width: 0%; transition: 1s ease; }
+        .heatmap-container { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; margin-top: 10px; }
+        .heat-box { aspect-ratio: 1; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: bold; color: rgba(255,255,255,0.3); }
+        .heat-low { background: #004d4d; color: white; border-color: #009999; }
+        .heat-med { background: #009999; color: white; border-color: var(--accent); }
+        .heat-high { background: var(--accent); color: black; box-shadow: 0 0 10px var(--accent); }
     </style>
 </head>
 <body>
 
 <div class="container">
 
-    <div id="vault" class="screen active">
-        <h2>Practice <span style="color:var(--accent)">Vault</span></h2>
+    <div id="plan" class="screen active">
+        <h2>Practice <span style="color:var(--accent)">Plan</span></h2>
+        
         <div class="glass-card">
-            <span class="custom-label">BPM Progress Heatmap</span>
-            <div id="heatmap" class="heatmap"></div>
-            <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:var(--muted); margin-top:5px;">
-                <span>Week 1</span><span>Week 24</span>
+            <div style="display:flex; justify-content:space-between; font-weight:900; font-size:0.7rem;">
+                <span>24-WEEK JOURNEY PROGRESS</span><span id="percText" style="color:var(--accent)">0%</span>
+            </div>
+            <div class="progress-bar"><div id="percBar" class="progress-fill"></div></div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div><span class="custom-label">Phase</span><select id="phaseSel" onchange="initWeeks()"></select></div>
+                <div><span class="custom-label">Week</span><select id="weekSel" onchange="updateUI()"></select></div>
+            </div>
+            <span class="custom-label">Day</span>
+            <select id="daySel" onchange="updateUI()">
+                <option value="1">Day 1: Technical Focus</option>
+                <option value="2">Day 2: Harmonic Focus</option>
+                <option value="3">Day 3: Rhythmic Focus</option>
+                <option value="4">Day 4: Performance Study</option>
+                <option value="5">Day 5: Week Review & Recording</option>
+            </select>
+            <div class="glass-card" style="background:rgba(255,255,255,0.02); border:none; margin-top:10px;">
+                <span class="custom-label" style="color:var(--secondary)">Mission Objective</span>
+                <div id="missionBody" style="font-size:1.1rem; font-weight:800; color:white;">Select a Day</div>
+                <div id="phaseDescDisplay" style="font-size:0.8rem; color:var(--muted); margin-top:8px;"></div>
             </div>
         </div>
 
         <div class="glass-card">
-            <span class="custom-label">Log Session</span>
+            <span class="custom-label">Smart Failure Logging & Heatmap</span>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <input type="number" id="bpmIn" placeholder="Clean BPM">
-                <select id="failTag">
-                    <option value="none">Perfect Form</option>
-                    <option value="noise">String Noise</option>
-                    <option value="sync">Hand Sync</option>
-                    <option value="stamina">Stamina</option>
-                    <option value="pick">Pick Slant</option>
+                <input type="number" id="bpmInput" placeholder="Max Clean BPM">
+                <select id="failReason">
+                    <option value="Perfect">Perfect Form</option>
+                    <option value="Pick Slant">Failed: Pick Slant</option>
+                    <option value="Sync">Failed: Hand Sync</option>
+                    <option value="Tension">Failed: Tension</option>
+                    <option value="Noise">Failed: String Noise</option>
                 </select>
             </div>
-            <button class="btn-primary" onclick="logBPM()">SAVE DATA POINT</button>
+            <button class="btn-primary" style="padding:12px;" onclick="logProgress()">LOG WEEKLY DATA</button>
+            <div id="heatmap" class="heatmap-container"></div>
+            <div style="text-align:center; font-size:0.6rem; color:var(--muted); margin-top:5px;">Weeks 1 - 24</div>
         </div>
     </div>
 
     <div id="lab" class="screen">
         <h2>Practice <span style="color:var(--accent)">Lab</span></h2>
         <div class="glass-card" style="text-align:center;">
-            <div id="blockLabel" style="font-weight:900; color:var(--muted); font-size:0.7rem;">CHOOSE WORKOUT</div>
+            <div id="blockLabel" style="font-weight:900; color:var(--muted); font-size:0.7rem;">SELECT WORKOUT BLOCK</div>
             <div class="timer-val" id="timer">00:00</div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:15px;">
-                <button class="btn-primary" style="padding:10px; font-size:0.7rem;" onclick="startTimer(4, 'Warmup')">Neural 4m</button>
-                <button class="btn-primary" style="padding:10px; font-size:0.7rem;" onclick="startTimer(8, 'Overload')">Tech 8m</button>
+                <button class="btn-pill" onclick="setTimer(4, 'Neural Warmup')">Neural Warmup</button>
+                <button class="btn-pill" onclick="setTimer(8, 'Tech Overload')">Tech Overload</button>
+                <button class="btn-pill" onclick="setTimer(6, 'Harmonic Intel')">Harmonic Intel</button>
+                <button class="btn-pill" onclick="setTimer(6, 'Rhythmic Ctrl')">Rhythmic Ctrl</button>
             </div>
-            <button class="btn-primary" id="tBtn" style="margin-top:10px; background:var(--secondary); color:white;" onclick="toggleT()">START TIMER</button>
+            <button class="btn-primary" id="tBtn" onclick="toggleT()">START TIMER</button>
+            <div id="drillGuide" class="drill-guide">Choose a block to see detailed mechanical instructions.</div>
         </div>
 
         <div class="glass-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span class="custom-label">Video Analysis</span>
-                <button class="btn-voice" onclick="toggleCam()" id="camBtn">Camera</button>
+                <span id="mBpmVal" style="font-weight:900; font-size:1.2rem; color:var(--accent);">120 BPM</span>
+                <button class="btn-pill" onclick="toggleM()" id="mPlayBtn">METRONOME</button>
+            </div>
+            <input type="range" min="40" max="250" value="120" style="width:100%; accent-color:var(--accent); margin-top:10px;" oninput="updateMBpm(this.value)">
+        </div>
+
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span class="custom-label">Video Analysis Lab</span>
+                <button class="btn-pill" onclick="toggleCam()" id="camBtn">Open Camera</button>
             </div>
             <video id="vPrev" autoplay muted playsinline></video>
+            <div id="recControls" style="display:none; margin-top:10px;">
+                <button class="btn-primary" id="recBtn" style="background:var(--danger); color:white;" onclick="toggleRec()">START RECORDING</button>
+                <div id="dlWrap"></div>
+            </div>
         </div>
     </div>
 
@@ -95,123 +139,172 @@
             <div style="width:100%; height:12px; background:rgba(255,255,255,0.03); border-radius:6px; position:relative; margin:40px 0; border: 1px solid var(--border); overflow:hidden;">
                 <div id="needle" style="position:absolute; left:50%; width:6px; height:100%; background:var(--accent); transition:0.1s; transform: translateX(-50%);"></div>
             </div>
-            <button class="btn-primary" id="tuneBtn" onclick="toggleTuner()">ENABLE MIC</button>
-        </div>
-    </div>
-
-    <div id="write" class="screen">
-        <h2>Gear & <span style="color:var(--accent)">Voice</span></h2>
-        <div class="glass-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span class="custom-label">Gear Vault / Notes</span>
-                <button class="btn-voice" id="voiceBtn" onclick="startSpeech()">🎤 DICTATE</button>
-            </div>
-            <textarea id="notes" placeholder="Recording signal chain or thoughts..."></textarea>
-            <div id="voiceStatus" style="font-size:0.6rem; color:var(--secondary); font-weight:900;"></div>
+            <button class="btn-primary" id="tuneBtn" onclick="toggleTuner()">ENABLE MICROPHONE</button>
         </div>
     </div>
 
     <div id="architect" class="screen">
         <h2>Blueprint <span style="color:var(--accent)">Architect</span></h2>
         <div class="glass-card">
-            <select id="editPhaseIdx" onchange="loadPhase()"></select>
-            <input type="text" id="editPhaseName" placeholder="Phase Title">
-            <textarea id="editPhaseDesc" placeholder="Strategy..."></textarea>
-            <input type="text" id="m1" placeholder="Day 1"><input type="text" id="m2" placeholder="Day 2">
-            <input type="text" id="m3" placeholder="Day 3"><input type="text" id="m4" placeholder="Day 4">
-            <input type="text" id="m5" placeholder="Day 5">
-            <button class="btn-primary" style="background:var(--success); color:#000;" onclick="savePhase()">UPDATE SYSTEM</button>
+            <span class="custom-label">Phase Editor</span>
+            <select id="editPhaseIdx" onchange="loadPhaseToEditor()">
+                <option value="0">Phase 1 (Wk 1-4)</option><option value="1">Phase 2 (Wk 5-8)</option><option value="2">Phase 3 (Wk 9-12)</option>
+                <option value="3">Phase 4 (Wk 13-16)</option><option value="4">Phase 5 (Wk 17-20)</option><option value="5">Phase 6 (Wk 21-24)</option>
+            </select>
+            <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:20px; border:1px solid var(--border);">
+                <span class="custom-label">Phase Title</span>
+                <input type="text" id="editPhaseName">
+                <span class="custom-label">Phase Strategy (Long Description)</span>
+                <textarea id="editPhaseDesc" placeholder="What is the high-level goal for these 4 weeks?"></textarea>
+            </div>
+            <div style="margin-top:15px;">
+                <span class="custom-label">Daily Mission Details</span>
+                <input type="text" id="m1" placeholder="Day 1 Detail"><input type="text" id="m2" placeholder="Day 2 Detail">
+                <input type="text" id="m3" placeholder="Day 3 Detail"><input type="text" id="m4" placeholder="Day 4 Detail">
+                <input type="text" id="m5" placeholder="Day 5 Detail">
+            </div>
+            <button class="btn-primary" style="background:var(--success); color:#000;" onclick="saveCustomBlueprint()">UPDATE GLOBAL PLAN</button>
+            <button class="btn-pill" style="width:100%; margin-top:10px; border-color:var(--danger); color:var(--danger);" onclick="resetBlueprint()">FACTORY RESET</button>
+        </div>
+    </div>
+
+    <div id="write" class="screen">
+        <h2>Notes & <span style="color:var(--accent)">Voice</span></h2>
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span class="custom-label">Voice Interpreter</span>
+                <button class="btn-voice" id="voiceBtn" onclick="startSpeech()">🎤 DICTATE TO NOTES</button>
+            </div>
+            <div id="voiceStatus" style="font-size:0.7rem; color:var(--accent); font-weight:800; margin-bottom:10px;"></div>
+            
+            <span class="custom-label">Gear Vault (Signal Chain Settings)</span>
+            <textarea id="gearNotes" style="min-height:80px;" placeholder="e.g. Lead Tone: Amp Gain 6, Delay 300ms, Neck Pickup..." oninput="autoSaveNotes()"></textarea>
+            
+            <span class="custom-label">General Scratchpad (Tabs & Lyrics)</span>
+            <textarea id="generalNotes" style="height:250px;" placeholder="Tabs, lyrics, or scale diagrams..." oninput="autoSaveNotes()"></textarea>
         </div>
     </div>
 
 </div>
 
 <nav class="tab-bar">
-    <div class="tab-item active" onclick="nav('vault', this)"><span class="tab-icon">📊</span>VAULT</div>
+    <div class="tab-item active" onclick="nav('plan', this)"><span class="tab-icon">📋</span>PLAN</div>
     <div class="tab-item" onclick="nav('lab', this)"><span class="tab-icon">🧪</span>LAB</div>
     <div class="tab-item" onclick="nav('tuner', this)"><span class="tab-icon">🎯</span>TUNER</div>
-    <div class="tab-item" onclick="nav('write', this)"><span class="tab-icon">🎙️</span>NOTES</div>
     <div class="tab-item" onclick="nav('architect', this)"><span class="tab-icon">🛠️</span>EDIT</div>
+    <div class="tab-item" onclick="nav('write', this)"><span class="tab-icon">🎙️</span>NOTES</div>
 </nav>
 
 <script>
-    // DATA
-    let blueprint = JSON.parse(localStorage.getItem('gtr_omni_bp')) || [
-        { name: "Phase 1: Technical Ceiling", desc: "Alt picking focus.", daily: ["Major Scale", "Strict Alt", "Beat-1 Sync", "Triplets", "Review"] },
-        { name: "Phase 2: Harmonic Expansion", desc: "Modal fluency.", daily: ["Dorian", "Mixolydian", "Lydian", "Phrygian", "Integration"] },
-        { name: "Phase 3: Rhythmic Authority", desc: "Odd groupings.", daily: ["7/8 Feel", "5/4 Groove", "Odd Groups", "Syncopation", "Review"] },
-        { name: "Phase 4: Speed Control", desc: "Burst training.", daily: ["Bursts", "Arpeggios", "Sweep", "Maintenance", "Review"] },
-        { name: "Phase 5: Modern Rock", desc: "Hybrid picking.", daily: ["Hybrid", "Upper Triads", "Modern Phrasing", "Intervals", "Review"] },
-        { name: "Phase 6: Integration", desc: "Composition.", daily: ["Motifs", "Solo Flow", "Dynamics", "Writing", "Final Showcase"] }
+    // --- 1. DATA ENGINE (Blueprint & Logs) ---
+    const defaultBlueprint = [
+        { name: "Phase 1: Technical Ceiling Reset", desc: "Building the physical machine. Focus on Minimal Movement and strict alternate picking mechanics.", daily: ["Major Scale Mapping & Logic", "Strict Alt Picking Drills", "Beat-1 Sync & Form", "Triplet Accuracy Focus", "Week Performance Check"] },
+        { name: "Phase 2: Harmonic Expansion", desc: "Internalizing Modal Fluency. Learning to see the neck as a map of Dorian, Mixolydian, and Lydian colors.", daily: ["Dorian Target Tones", "Mixolydian Dominant Paths", "Lydian Brightness Mapping", "Phrygian Tension Lines", "Full Modal Integration"] },
+        { name: "Phase 3: Rhythmic Authority", desc: "Mastering Feel. Breaking out of the 4/4 box into 5/4 and 7/8 signatures.", daily: ["7/8 Riff Displacement", "5/4 Groove Endurance", "Odd Grouping Mastery", "Sixplet Poly-rhythms", "Odd Time Improvisation"] },
+        { name: "Phase 4: Speed + Musical Control", desc: "High-performance technique. Burst training and advanced multi-string arpeggios.", daily: ["Short Speed Bursts", "Arpeggio String Skipping", "Sweep-to-Pick Transitions", "Hyper-speed Form Check", "Final Recording Session"] },
+        { name: "Phase 5: Modern Rock Mastery", desc: "Advanced Professional Techniques. Hybrid picking and upper-structure triad substitutions.", daily: ["Hybrid Picking Clarity", "Upper-Structure Triads", "Interval Jump Mastery", "Chromatic Outside Lines", "Modern Etude Performance"] },
+        { name: "Phase 6: Professional Integration", desc: "Becoming the Artist. Focus on composition, motif development, and full instrumental flow.", daily: ["Motif Development Drills", "Full System Improvisation", "Dynamics & Pocket Flow", "Original Composition Block", "24-Week Final Showcase"] }
     ];
 
-    let bpmData = JSON.parse(localStorage.getItem('gtr_bpm_log')) || [];
+    const drillDetails = {
+        "Neural Warmup": "Slow & Precise. Play current scales at 50% max speed. Keep fingers hovering 2mm from the frets. Focus on the brain-hand sync.",
+        "Tech Overload": "High Intensity. Set BPM 10 points above your comfort zone. Push through the 'burn' while maintaining string clarity. Log your failure point.",
+        "Harmonic Intel": "Visualize the neck. Locate the 3rds and 7ths of your current mode across all strings. Play arpeggios within the mode, not just scales.",
+        "Rhythmic Ctrl": "Pocket work. Practice playing a simple phrase but shifting the start beat by an eighth note (Rhythmic Displacement)."
+    };
 
+    let activeBlueprint = JSON.parse(localStorage.getItem('gtr_master_bp_v5')) || [...defaultBlueprint];
+    let progressLogs = JSON.parse(localStorage.getItem('gtr_master_logs_v5')) || {}; // Key: Week, Value: {bpm, reason}
+
+    // --- 2. NAVIGATION ---
     function nav(id, el) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
+        if(id !== 'tuner' && tuning) toggleTuner();
     }
 
-    // HEATMAP LOGIC
-    function drawHeatmap() {
+    // --- 3. PLAN & HEATMAP LOGIC ---
+    function initPhases() {
+        const pSel = document.getElementById('phaseSel');
+        pSel.innerHTML = "";
+        activeBlueprint.forEach((p, i) => {
+            let o = document.createElement('option'); o.value = i; o.innerText = p.name;
+            pSel.appendChild(o);
+        });
+        initWeeks();
+    }
+
+    function initWeeks() {
+        const pIdx = document.getElementById('phaseSel').value;
+        const wSel = document.getElementById('weekSel');
+        wSel.innerHTML = "";
+        const start = (pIdx * 4) + 1;
+        for(let i=start; i < start+4; i++) {
+            let o = document.createElement('option'); o.value = i; o.innerText = "Week " + i;
+            wSel.appendChild(o);
+        }
+        updateUI();
+    }
+
+    function updateUI() {
+        const pIdx = document.getElementById('phaseSel').value;
+        const dayIdx = document.getElementById('daySel').value - 1;
+        const week = document.getElementById('weekSel').value;
+        const phase = activeBlueprint[pIdx];
+        
+        document.getElementById('phaseDescDisplay').innerText = phase.desc;
+        document.getElementById('missionBody').innerText = phase.daily[dayIdx];
+        
+        const progress = Math.round((week / 24) * 100);
+        document.getElementById('percBar').style.width = progress + "%";
+        document.getElementById('percText').innerText = progress + "% COMPLETE";
+        
+        // Populate inputs if already logged
+        const log = progressLogs[week];
+        document.getElementById('bpmInput').value = log ? log.bpm : '';
+        document.getElementById('failReason').value = log ? log.reason : 'Perfect';
+        
+        renderHeatmap();
+    }
+
+    function logProgress() {
+        const week = document.getElementById('weekSel').value;
+        const bpm = document.getElementById('bpmInput').value;
+        const reason = document.getElementById('failReason').value;
+        if(!bpm) return alert("Please enter a BPM.");
+        
+        progressLogs[week] = { bpm: parseInt(bpm), reason: reason };
+        localStorage.setItem('gtr_master_logs_v5', JSON.stringify(progressLogs));
+        renderHeatmap();
+        alert(`Week ${week} Logged: ${bpm} BPM (${reason})`);
+    }
+
+    function renderHeatmap() {
         const container = document.getElementById('heatmap');
         container.innerHTML = '';
-        for(let i=0; i<24; i++) {
+        for(let i = 1; i <= 24; i++) {
             const box = document.createElement('div');
             box.className = 'heat-box';
-            if(bpmData[i]) {
-                if(bpmData[i].bpm > 180) box.classList.add('heat-high');
-                else if(bpmData[i].bpm > 120) box.classList.add('heat-med');
+            box.innerText = i;
+            if(progressLogs[i]) {
+                const b = progressLogs[i].bpm;
+                if(b >= 160) box.classList.add('heat-high');
+                else if(b >= 100) box.classList.add('heat-med');
                 else box.classList.add('heat-low');
+                box.title = `Week ${i}: ${b} BPM (${progressLogs[i].reason})`;
             }
             container.appendChild(box);
         }
     }
 
-    function logBPM() {
-        const bpm = document.getElementById('bpmIn').value;
-        const tag = document.getElementById('failTag').value;
-        if(!bpm) return;
-        bpmData.push({ bpm: parseInt(bpm), tag: tag, date: new Date() });
-        localStorage.setItem('gtr_bpm_log', JSON.stringify(bpmData));
-        drawHeatmap();
-        alert("Data logged to Vault.");
-    }
-
-    // VOICE INTERPRETER
-    const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
-    if(recognition) {
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.onresult = (e) => {
-            let transcript = '';
-            for(let i = e.resultIndex; i < e.results.length; i++) transcript += e.results[i][0].transcript;
-            document.getElementById('notes').value += transcript + " ";
-        };
-    }
-
-    function startSpeech() {
-        if(!recognition) return alert("Speech not supported in this browser.");
-        const btn = document.getElementById('voiceBtn');
-        if(btn.innerText.includes("DICTATE")) {
-            recognition.start();
-            btn.innerText = "🛑 STOPPING...";
-            btn.style.background = "var(--danger)";
-            document.getElementById('voiceStatus').innerText = "LISTENING IN REAL TIME...";
-        } else {
-            recognition.stop();
-            btn.innerText = "🎤 DICTATE";
-            btn.style.background = "var(--secondary)";
-            document.getElementById('voiceStatus').innerText = "";
-        }
-    }
-
-    // TIMER
-    let tRem = 0, tIv;
-    function startTimer(m, l) {
-        tRem = m * 60; document.getElementById('blockLabel').innerText = l;
+    // --- 4. LAB: TIMER, METRONOME, VIDEO ---
+    let tRem = 0, tAct = false, tIv;
+    function setTimer(m, l) {
+        tRem = m * 60;
+        document.getElementById('blockLabel').innerText = l.toUpperCase();
+        document.getElementById('drillGuide').innerText = drillDetails[l] || "Execute the current day's mission with full focus.";
         renderT();
     }
     function renderT() {
@@ -219,21 +312,83 @@
         document.getElementById('timer').innerText = `${m}:${s<10?'0'+s:s}`;
     }
     function toggleT() {
-        if(tIv) { clearInterval(tIv); tIv = null; document.getElementById('tBtn').innerText = "RESUME"; }
-        else { tIv = setInterval(() => { tRem--; renderT(); if(tRem<=0) clearInterval(tIv); }, 1000); document.getElementById('tBtn').innerText = "PAUSE"; }
+        if(!tAct && tRem > 0) {
+            tAct = true;
+            tIv = setInterval(() => { tRem--; renderT(); if(tRem<=0){ clearInterval(tIv); tAct=false; alert("Drill Complete!"); } }, 1000);
+            document.getElementById('tBtn').innerText = "PAUSE";
+        } else { clearInterval(tIv); tAct = false; document.getElementById('tBtn').innerText = "RESUME"; }
     }
 
-    // TUNER
+    let mCtx, mBpm = 120, mOn = false, mNext = 0, mIv;
+    function updateMBpm(v) { mBpm = v; document.getElementById('mBpmVal').innerText = v + " BPM"; }
+    function toggleM() {
+        if(!mCtx) mCtx = new (window.AudioContext || window.webkitAudioContext)();
+        mOn = !mOn;
+        if(mOn) { mNext = mCtx.currentTime; mTick(); document.getElementById('mPlayBtn').innerText = "STOP METRONOME"; }
+        else { clearTimeout(mIv); document.getElementById('mPlayBtn').innerText = "METRONOME"; }
+    }
+    function mTick() {
+        while(mNext < mCtx.currentTime + 0.1) {
+            const o = mCtx.createOscillator(); const g = mCtx.createGain();
+            o.frequency.value = 1000; g.gain.exponentialRampToValueAtTime(1, mNext);
+            g.gain.exponentialRampToValueAtTime(0.001, mNext + 0.05);
+            o.connect(g); g.connect(mCtx.destination); o.start(mNext); o.stop(mNext + 0.05);
+            mNext += 60 / mBpm;
+        }
+        mIv = setTimeout(mTick, 25);
+    }
+
+    let stream, recorder, chunks = [];
+    async function toggleCam() {
+        const v = document.getElementById('vPrev');
+        const rb = document.getElementById('recControls');
+        if(!stream) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                v.srcObject = stream; v.style.display = 'block'; rb.style.display = 'block';
+                document.getElementById('camBtn').innerText = "Close Camera";
+            } catch(e) { alert("Camera access denied or not supported."); }
+        } else {
+            stream.getTracks().forEach(t => t.stop()); stream = null;
+            v.style.display = 'none'; rb.style.display = 'none';
+            document.getElementById('camBtn').innerText = "Open Camera";
+        }
+    }
+    function toggleRec() {
+        const rb = document.getElementById('recBtn');
+        if(!recorder || recorder.state === 'inactive') {
+            chunks = []; recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const b = new Blob(chunks, { type: 'video/mp4' });
+                const u = URL.createObjectURL(b);
+                const a = document.createElement('a'); a.href = u; a.download = `practice_review.mp4`;
+                a.innerText = "💾 DOWNLOAD SESSION REVIEW"; a.className = "btn-primary";
+                a.style.cssText = "display:block; background:var(--success); text-decoration:none; text-align:center; color:#000; margin-top:10px;";
+                document.getElementById('dlWrap').innerHTML = ''; document.getElementById('dlWrap').appendChild(a);
+            };
+            recorder.start(); rb.innerText = "STOP RECORDING"; rb.style.background = "var(--danger)";
+        } else { recorder.stop(); rb.innerText = "START RECORDING"; rb.style.background = "var(--accent)"; }
+    }
+
+    // --- 5. TUNER LOGIC ---
     let tCtx, tAnalys, tData, tStr, tuning = false;
     async function toggleTuner() {
+        const b = document.getElementById('tuneBtn');
         if(!tuning) {
-            tCtx = new AudioContext(); tStr = await navigator.mediaDevices.getUserMedia({ audio: true });
-            tCtx.createMediaStreamSource(tStr).connect(tAnalys = tCtx.createAnalyser());
-            tAnalys.fftSize = 4096; tData = new Float32Array(tAnalys.frequencyBinCount);
-            tuning = true; tTick();
+            try {
+                tCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+                tStr = await navigator.mediaDevices.getUserMedia({ audio: true });
+                tCtx.createMediaStreamSource(tStr).connect(tAnalys = tCtx.createAnalyser());
+                tAnalys.fftSize = 4096; tData = new Float32Array(tAnalys.frequencyBinCount);
+                tuning = true; b.innerText = "STOP TUNER"; b.style.background = "var(--danger)";
+                tTick();
+            } catch(e) { alert("Microphone required for tuning."); }
         } else {
-            tStr.getTracks().forEach(t => t.stop()); tuning = false;
+            if(tStr) tStr.getTracks().forEach(t => t.stop()); if(tCtx) tCtx.close();
+            tuning = false; b.innerText = "ENABLE MICROPHONE"; b.style.background = "var(--accent)";
             document.getElementById('noteName').innerText = "--";
+            document.getElementById('needle').style.left = "50%";
         }
     }
     function tTick() {
@@ -245,49 +400,95 @@
         if(f > 40 && f < 1000 && maxV > -60) {
             let p = 12 * Math.log2(f/440) + 69;
             document.getElementById('noteName').innerText = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"][Math.round(p)%12];
-            document.getElementById('needle').style.left = (50 + (p-Math.round(p))*50) + "%";
+            let diff = (p - Math.round(p)) * 50;
+            document.getElementById('needle').style.left = (50 + diff) + "%";
+            document.getElementById('needle').style.background = Math.abs(diff) < 5 ? "var(--success)" : "var(--accent)";
         }
         requestAnimationFrame(tTick);
     }
 
-    // CAM
-    let stream;
-    async function toggleCam() {
-        const v = document.getElementById('vPrev');
-        if(!stream) {
-            stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            v.srcObject = stream; v.style.display = 'block';
-        } else {
-            stream.getTracks().forEach(t => t.stop()); stream = null;
-            v.style.display = 'none';
+    // --- 6. ARCHITECT ENGINE ---
+    function loadPhaseToEditor() {
+        const idx = document.getElementById('editPhaseIdx').value;
+        const p = activeBlueprint[idx];
+        document.getElementById('editPhaseName').value = p.name;
+        document.getElementById('editPhaseDesc').value = p.desc;
+        p.daily.forEach((m, i) => document.getElementById('m' + (i+1)).value = m);
+    }
+
+    function saveCustomBlueprint() {
+        const idx = document.getElementById('editPhaseIdx').value;
+        activeBlueprint[idx] = {
+            name: document.getElementById('editPhaseName').value,
+            desc: document.getElementById('editPhaseDesc').value,
+            daily: [1,2,3,4,5].map(i => document.getElementById('m' + i).value)
+        };
+        localStorage.setItem('gtr_master_bp_v5', JSON.stringify(activeBlueprint));
+        alert("Global Plan Updated Successfully!");
+        initPhases();
+    }
+
+    function resetBlueprint() {
+        if(confirm("Restore the original 24-week Future Pro plan?")) {
+            activeBlueprint = [...defaultBlueprint];
+            localStorage.setItem('gtr_master_bp_v5', JSON.stringify(activeBlueprint));
+            loadPhaseToEditor();
+            initPhases();
         }
     }
 
-    // ARCHITECT
-    function initEditor() {
-        const s = document.getElementById('editPhaseIdx');
-        blueprint.forEach((p,i) => { let o = document.createElement('option'); o.value=i; o.innerText=p.name; s.appendChild(o); });
-        loadPhase();
-    }
-    function loadPhase() {
-        const p = blueprint[document.getElementById('editPhaseIdx').value];
-        document.getElementById('editPhaseName').value = p.name;
-        document.getElementById('editPhaseDesc').value = p.desc;
-        p.daily.forEach((d,i) => document.getElementById('m'+(i+1)).value = d);
-    }
-    function savePhase() {
-        const i = document.getElementById('editPhaseIdx').value;
-        blueprint[i] = {
-            name: document.getElementById('editPhaseName').value,
-            desc: document.getElementById('editPhaseDesc').value,
-            daily: [1,2,3,4,5].map(n => document.getElementById('m'+n).value)
+    // --- 7. VOICE INTERPRETER & NOTES ---
+    const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
+    let isListening = false;
+    
+    if(recognition) {
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.onresult = (e) => {
+            let transcript = '';
+            for(let i = e.resultIndex; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+            
+            // Append to General Notes by default
+            const notesEl = document.getElementById('generalNotes');
+            if(e.results[e.results.length-1].isFinal) {
+                notesEl.value += transcript + " ";
+                autoSaveNotes();
+            }
         };
-        localStorage.setItem('gtr_omni_bp', JSON.stringify(blueprint));
-        alert("System Updated.");
     }
 
-    drawHeatmap();
-    initEditor();
+    function startSpeech() {
+        if(!recognition) return alert("Web Speech API is not supported in this browser (Try Chrome/Safari).");
+        const btn = document.getElementById('voiceBtn');
+        const status = document.getElementById('voiceStatus');
+        
+        if(!isListening) {
+            recognition.start();
+            isListening = true;
+            btn.innerHTML = "🛑 STOP DICTATING";
+            btn.style.background = "var(--danger)";
+            status.innerText = "Listening... Speak your notes clearly.";
+        } else {
+            recognition.stop();
+            isListening = false;
+            btn.innerHTML = "🎤 DICTATE TO NOTES";
+            btn.style.background = "var(--secondary)";
+            status.innerText = "";
+        }
+    }
+
+    function autoSaveNotes() { 
+        localStorage.setItem('gtr_gear_v5', document.getElementById('gearNotes').value);
+        localStorage.setItem('gtr_notes_v5', document.getElementById('generalNotes').value);
+    }
+    
+    // Initialize Notes
+    document.getElementById('gearNotes').value = localStorage.getItem('gtr_gear_v5') || '';
+    document.getElementById('generalNotes').value = localStorage.getItem('gtr_notes_v5') || '';
+
+    // Initialize App
+    initPhases();
+    loadPhaseToEditor();
 </script>
 </body>
 </html>
