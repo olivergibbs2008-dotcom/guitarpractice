@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>StrumTrack Ultra</title>
+    <style>
+        :root { --bg: #05070a; --glass: rgba(20, 25, 35, 0.95); --accent: #00f2ff; --secondary: #7000ff; --text: #ffffff; --muted: #64748b; --danger: #ff4757; --success: #2ed573; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #05070a; color: var(--text); margin: 0; padding: 20px 20px 90px; overflow-x: hidden; }
+        .container { max-width: 450px; margin: 0 auto; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 24px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        .tab-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: #0a0f19; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #1e293b; z-index: 1000; padding-bottom:env(safe-area-inset-bottom); }
+        .tab-item { color: var(--muted); font-size: 0.65rem; text-align: center; cursor: pointer; flex: 1; transition: 0.2s; }
+        .tab-item.active { color: var(--accent); transform: translateY(-3px); }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .note-display { font-size: 5.5rem; font-weight: 900; color: var(--accent); margin: 10px 0; text-shadow: 0 0 20px rgba(0, 242, 255, 0.4); }
+        .tuner-meter { width: 100%; height: 12px; background: #1e293b; border-radius: 6px; position: relative; margin: 25px 0; overflow: hidden; }
+        .tuner-needle { position: absolute; top: 0; left: 50%; width: 5px; height: 100%; background: var(--accent); transform: translateX(-50%); transition: left 0.1s ease-out; }
+        
+        button { border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: active 0.1s; }
+        button:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-main { background: var(--accent); color: #000; padding: 14px 20px; width: 100%; }
+        textarea { width: 100%; height: 250px; background: rgba(0,0,0,0.3); border: 1px solid #1e293b; color: white; padding: 14px; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 1rem; line-height: 1.4; }
+        input[type="number"] { background: none; border: none; color: white; font-weight: 800; font-size: 1.2rem; width: 60px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="tuner" class="screen">
+        <h2>Tuner</h2>
+        <div class="glass-card" style="text-align:center;">
+            <div id="noteName" class="note-display">--</div>
+            <div class="tuner-meter"><div id="needle" class="tuner-needle"></div></div>
+            <div id="freq" style="font-family:monospace; color:var(--muted);">Ready...</div>
+            <button class="btn-main" style="margin-top:20px;" onclick="startTuner()" id="tunerTrigger">ENABLE MICROPHONE</button>
+        </div>
+    </div>
+
+    <div id="dash" class="screen active">
+        <h2>Dashboard</h2>
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:0.7rem; color:var(--muted); text-transform:uppercase;">Goal Progress</span>
+                <span id="goalStats" style="font-weight:bold; color:var(--accent);">0 / 300m</span>
+            </div>
+            <div style="width:100%; height:8px; background:#1e293b; border-radius:4px; margin-top:10px;">
+                <div id="progressBar" style="width:0%; height:100%; background:var(--accent); border-radius:4px; transition: width 1s;"></div>
+            </div>
+        </div>
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size:2.5rem; font-weight:900; color:var(--accent);" id="bpmVal">120</div>
+                <button class="btn-main" style="width:auto; padding: 10px 25px;" onclick="toggleMetronome()" id="metroBtn">START</button>
+            </div>
+            <input type="range" id="bpmSlider" min="40" max="220" value="120" oninput="updateBPM(this.value)" style="width:100%; margin-top:20px; accent-color:var(--accent);">
+        </div>
+    </div>
+
+    <div id="practice" class="screen">
+        <h2>Session Timer</h2>
+        <div class="glass-card" style="text-align:center;">
+            <div style="font-size:4rem; font-weight:800; color:var(--secondary); margin:10px 0;" id="timerDisplay">20:00</div>
+            <div style="margin-bottom:20px; color:var(--muted);">Set Mins: <input type="number" id="sessionTarget" value="20" onchange="resetTimerDisplay()"></div>
+            <button class="btn-main" style="background:var(--secondary); color:white;" id="timerBtn" onclick="toggleTimer()">START SESSION</button>
+        </div>
+        <input type="text" id="sessionFocus" placeholder="What are you practicing?" style="width:100%; background:#1e293b; border:none; padding:16px; border-radius:12px; color:white;">
+    </div>
+
+    <div id="write" class="screen">
+        <h2>Scratchpad</h2>
+        <textarea id="notes" placeholder="Paste tabs or write lyrics..." oninput="saveNotes()"></textarea>
+    </div>
+</div>
+
+<nav class="tab-bar">
+    <div class="tab-item" onclick="showScreen('tuner', this)">🎸<br>Tuner</div>
+    <div class="tab-item active" onclick="showScreen('dash', this)">🏠<br>Dash</div>
+    <div class="tab-item" onclick="showScreen('practice', this)">⏱️<br>Practice</div>
+    <div class="tab-item" onclick="showScreen('write', this)">📝<br>Write</div>
+</nav>
+
+<script>
+    // --- Global & Navigation ---
+    const showScreen = (id, el) => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+    };
+
+    // --- Tuner Logic ---
+    let tCtx, tAnalys, tData;
+    const nNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    
+    async function startTuner() {
+        try {
+            tCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const source = tCtx.createMediaStreamSource(stream);
+            tAnalys = tCtx.createAnalyser();
+            tAnalys.fftSize = 4096; // Higher resolution for guitar strings
+            source.connect(tAnalys);
+            tData = new Float32Array(tAnalys.frequencyBinCount);
+            document.getElementById('tunerTrigger').style.display = 'none';
+            tickTuner();
+        } catch(e) { alert("Mic access denied or not supported."); }
+    }
+
+    function tickTuner() {
+        tAnalys.getFloatFrequencyData(tData);
+        let maxV = -Infinity, maxB = -1;
+        for (let i = 0; i < tData.length; i++) { if (tData[i] > maxV) { maxV = tData[i]; maxB = i; } }
+        let f = maxB * tCtx.sampleRate / tAnalys.fftSize;
+        if (maxV > -60 && f > 40 && f < 1000) {
+            document.getElementById('freq').innerText = f.toFixed(1) + " Hz";
+            let p = 12 * (Math.log2(f / 440)) + 69;
+            let n = Math.round(p) % 12;
+            document.getElementById('noteName').innerText = nNames[n];
+            let d = (p - Math.round(p)) * 100;
+            document.getElementById('needle').style.left = (50 + d/2) + "%";
+            document.getElementById('needle').style.background = Math.abs(d) < 5 ? "var(--success)" : "var(--danger)";
+        }
+        requestAnimationFrame(tickTuner);
+    }
+
+    // --- Metronome Logic ---
+    let mCtx, mPlay = false, bpm = 120, nextT = 0, mID;
+    const updateBPM = v => { bpm = v; document.getElementById('bpmVal').innerText = v; };
+    const toggleMetronome = () => {
+        if (!mCtx) mCtx = new AudioContext();
+        if (mCtx.state === 'suspended') mCtx.resume();
+        mPlay = !mPlay;
+        if (mPlay) { nextT = mCtx.currentTime; runM(); document.getElementById('metroBtn').innerText = "STOP"; }
+        else { clearTimeout(mID); document.getElementById('metroBtn').innerText = "START"; }
+    };
+    const runM = () => {
+        while (nextT < mCtx.currentTime + 0.1) {
+            const o = mCtx.createOscillator(); const g = mCtx.createGain();
+            o.frequency.value = 1000; g.gain.exponentialRampToValueAtTime(1, nextT);
+            g.gain.exponentialRampToValueAtTime(0.001, nextT + 0.04);
+            o.connect(g); g.connect(mCtx.destination);
+            o.start(nextT); o.stop(nextT + 0.04);
+            nextT += 60 / bpm;
+        }
+        mID = setTimeout(runM, 25);
+    };
+
+    // --- Timer Logic ---
+    let tLeft, tID, tActive = false;
+    const resetTimerDisplay = () => {
+        const mins = document.getElementById('sessionTarget').value;
+        document.getElementById('timerDisplay').innerText = `${mins}:00`;
+    };
+    const toggleTimer = () => {
+        if (!tActive) {
+            tLeft = document.getElementById('sessionTarget').value * 60;
+            tActive = true; 
+            tID = setInterval(() => {
+                tLeft--; renderT();
+                if (tLeft <= 0) { clearInterval(tID); completeSession(); }
+            }, 1000);
+            document.getElementById('timerBtn').innerText = "FINISH EARLY";
+        } else { completeSession(); }
+    };
+    const renderT = () => {
+        const m = Math.floor(tLeft / 60); const s = tLeft % 60;
+        document.getElementById('timerDisplay').innerText = `${m}:${s < 10 ? '0'+s : s}`;
+    };
+    const completeSession = () => {
+        clearInterval(tID);
+        tActive = false;
+        const mins = document.getElementById('sessionTarget').value;
+        const h = JSON.parse(localStorage.getItem('gtr_v3') || '[]');
+        h.unshift({ mins, date: new Date().toLocaleDateString() });
+        localStorage.setItem('gtr_v3', JSON.stringify(h));
+        document.getElementById('timerBtn').innerText = "START SESSION";
+        resetTimerDisplay();
+        updateDash();
+    };
+
+    // --- Dash & Notes ---
+    const updateDash = () => {
+        const h = JSON.parse(localStorage.getItem('gtr_v3') || '[]');
+        const total = h.reduce((s, i) => s + parseInt(i.mins), 0);
+        document.getElementById('goalStats').innerText = `${total} / 300m`;
+        document.getElementById('progressBar').style.width = Math.min((total/300)*100, 100) + "%";
+    };
+    const saveNotes = () => localStorage.setItem('gtr_notes_v3', document.getElementById('notes').value);
+    document.getElementById('notes').value = localStorage.getItem('gtr_notes_v3') || '';
+    
+    updateDash();
+</script>
+</body>
+</html>
