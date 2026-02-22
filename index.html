@@ -5,300 +5,343 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#020408">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Practice Lab v18.0</title>
+    <title>Practice OS v19.0</title>
     
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Practice%20Lab%22,%22short_name%22:%22Lab%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#020408%22,%22theme_color%22:%22#00f2ff%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3293/3293810.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Practice%20OS%22,%22short_name%22:%22OS%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#020408%22,%22theme_color%22:%22#00f2ff%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3293/3293810.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
 
     <style>
         :root { --bg: #020408; --card: #0d1117; --accent: #00f2ff; --secondary: #7000ff; --text: #f0f6fc; --border: #30363d; --danger: #f85149; --success: #3fb950; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, system-ui, sans-serif; }
-        body { background: var(--bg); color: var(--text); margin: 0; padding: 10px 10px 100px; line-height: 1.4; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding: 10px 10px 100px; line-height: 1.4; overflow-x: hidden; }
         
-        h2 { font-size: 0.85rem; text-transform: uppercase; color: var(--accent); margin: 20px 0 10px; letter-spacing: 1px; font-weight: 900; }
-
-        .grid-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 15px; }
-        .chip { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px 5px; border-radius: 8px; font-size: 0.65rem; font-weight: bold; text-align: center; cursor: pointer; }
-        .chip.active { border-color: var(--accent); background: rgba(0,242,255,0.1); color: var(--accent); }
-
+        h2 { font-size: 0.85rem; text-transform: uppercase; color: var(--accent); margin: 20px 0 10px; letter-spacing: 1.5px; font-weight: 900; }
         .glass-card { background: var(--card); border-radius: 12px; padding: 15px; border: 1px solid var(--border); margin-bottom: 15px; }
         label { display: block; font-size: 0.55rem; color: #8b949e; text-transform: uppercase; font-weight: 900; margin-bottom: 5px; }
 
+        /* Grids & Inputs */
+        .grid-select { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 15px; }
+        .chip { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px 2px; border-radius: 8px; font-size: 0.6rem; font-weight: bold; text-align: center; cursor: pointer; }
+        .chip.active { border-color: var(--accent); background: rgba(0,242,255,0.1); color: var(--accent); }
+
+        input, select, textarea { width: 100%; background: #161b22; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 10px; }
         .btn-prime { background: var(--accent); color: #000; border: none; width: 100%; padding: 14px; border-radius: 10px; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; cursor: pointer; }
-        .btn-sec { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 6px; font-size: 0.65rem; cursor: pointer; }
-        
-        /* Clock Grid */
-        .clock-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .clock-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; }
-        .clock-val { font-size: 1.8rem; font-family: monospace; font-weight: bold; margin: 5px 0; }
-        .clock-ctrls { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .btn-sec { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 6px; font-size: 0.6rem; cursor: pointer; }
 
-        /* Camera Box */
-        .camera-rig { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin: 15px 0; }
-        #vPrev { width: 100%; display: none; transform: scaleX(-1); }
-
-        /* Content Areas */
-        .instruction-box { background: rgba(0, 242, 255, 0.03); border-left: 4px solid var(--accent); padding: 12px; border-radius: 4px; margin-bottom: 15px; }
-        .screen { display: none; }
-        .screen.active { display: block; }
+        /* Specialized UI */
+        .clock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .timer-val { font-size: 1.8rem; font-family: monospace; font-weight: bold; margin: 5px 0; }
+        .camera-box { width: 100%; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin: 10px 0; display: none; position: relative; }
+        #vPrev { width: 100%; transform: scaleX(-1); }
+        .chart-container { height: 200px; width: 100%; margin-top: 10px; }
 
         /* Navigation */
         .tab-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #010409; display: flex; border-top: 1px solid var(--border); z-index: 1000; }
-        .tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold; color: #8b949e; }
+        .tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: bold; color: #8b949e; }
         .tab.active { color: var(--accent); border-top: 2px solid var(--accent); }
+        .screen { display: none; }
+        .screen.active { display: block; }
 
-        input, select, textarea { width: 100%; background: #161b22; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 10px; }
+        .log-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #161b22; border-radius: 6px; margin-bottom: 5px; font-size: 0.75rem; }
+        .video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; }
+        .video-wrap iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:0; }
     </style>
 </head>
 <body>
 
 <div id="vault" class="screen active">
-    <h2>Timeline Selector</h2>
-    <div id="phaseGrid" class="grid-selector"></div>
-    <div id="weekGrid" class="grid-selector"></div>
+    <h2>Performance Analytics</h2>
+    <div class="glass-card">
+        <canvas id="bpmChart"></canvas>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn-sec" onclick="exportData()">Export CSV</button>
+            <button class="btn-sec" style="color:var(--danger)" onclick="clearLogs()">Reset Data</button>
+        </div>
+    </div>
+    
+    <div class="grid-select" id="vPhase"></div>
+    <div class="grid-select" id="vWeek"></div>
 
     <div class="glass-card">
-        <label>Log Benchmark</label>
-        <select id="logType">
-            <option>Neural Warmup</option>
-            <option>Speed Bursts</option>
-            <option>Interval Mapping</option>
-        </select>
-        <input type="number" id="logBPM" placeholder="BPM">
-        <button class="btn-prime" onclick="saveLog()">Save Entry</button>
+        <label>Manual Entry</label>
+        <input type="number" id="manualBpm" placeholder="Enter BPM">
+        <button class="btn-prime" onclick="addLog()">Log Result</button>
     </div>
-    <div id="logHistory"></div>
+    <div id="logList"></div>
 </div>
 
 <div id="lab" class="screen">
-    <div class="clock-container">
-        <div class="clock-box">
-            <label>Countdown</label>
-            <div id="tDisp" class="clock-val">00:00</div>
-            <div class="clock-ctrls">
-                <button class="btn-sec" onclick="toggleTimer()" id="tBtn">Start</button>
-                <button class="btn-sec" onclick="resetT()">Reset</button>
+    <div class="clock-row">
+        <div class="glass-card" style="text-align:center; margin:0">
+            <label>Drill</label>
+            <div id="tDisp" class="timer-val">00:00</div>
+            <div style="display:flex; gap:4px; justify-content:center;">
+                <button class="btn-sec" onclick="toggleT()" id="tBtn">▶</button>
+                <button class="btn-sec" onclick="resetT()">↺</button>
             </div>
         </div>
-        <div class="clock-box">
-            <label style="color:var(--secondary)">Stopwatch</label>
-            <div id="swDisp" class="clock-val" style="color:var(--secondary)">00:00</div>
-            <div class="clock-ctrls">
-                <button class="btn-sec" onclick="toggleSW()" id="swBtn">Start</button>
-                <button class="btn-sec" onclick="resetSW()">Reset</button>
+        <div class="glass-card" style="text-align:center; margin:0">
+            <label style="color:var(--secondary)">Total</label>
+            <div id="swDisp" class="timer-val" style="color:var(--secondary)">00:00</div>
+            <div style="display:flex; gap:4px; justify-content:center;">
+                <button class="btn-sec" onclick="toggleSW()" id="swBtn">▶</button>
+                <button class="btn-sec" onclick="resetSW()">↺</button>
             </div>
         </div>
     </div>
-
-    <div class="grid-selector">
-        <button class="chip" onclick="loadDrill('warmup')">Warmup</button>
-        <button class="chip" onclick="loadDrill('speed')">Speed</button>
-        <button class="chip" onclick="loadDrill('theory')">Theory</button>
-    </div>
-
-    <div id="drillText" class="instruction-box" style="display:none;">
-        <strong id="dTitle" style="color:var(--accent); font-size:0.8rem;"></strong><br>
-        <span id="dBody" style="font-size:0.75rem; color:#d1d5db;"></span>
-    </div>
-
-    <div class="camera-rig">
-        <video id="vPrev" autoplay muted playsinline></video>
-        <div style="padding:10px; display:flex; gap:10px;">
-            <button class="btn-sec" onclick="toggleCam()" id="camBtn">Open Lens</button>
-            <button class="btn-sec" id="recBtn" style="display:none; background:var(--danger); border:none;" onclick="toggleRec()">Rec Start</button>
-        </div>
-    </div>
-    <div id="downloadLink"></div>
 
     <div class="glass-card">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span id="bpmVal" style="font-weight:bold; color:var(--accent)">120 BPM</span>
-            <button class="btn-sec" onclick="toggleMet()" id="metBtn">Metronome</button>
+        <label>Protocol Selection</label>
+        <div class="grid-select">
+            <select id="selWorkout" onchange="syncDrills()"><option>Workout A</option><option>Workout B</option></select>
+            <select id="selExercise" onchange="applyDrill()" style="grid-column: span 3;"></select>
+        </div>
+        <div id="drillDetail" style="font-size: 0.75rem; color: #d1d5db; border-left: 2px solid var(--accent); padding-left: 10px; margin-top: 5px;"></div>
+    </div>
+
+    <div class="camera-box" id="camContainer">
+        <video id="vPrev" autoplay muted playsinline></video>
+        <div style="padding:10px; display:flex; gap:10px;">
+            <button class="btn-sec" id="recBtn" style="background:var(--danger); border:none;" onclick="toggleRec()">Rec Start</button>
+            <button class="btn-sec" onclick="toggleCam()">Close</button>
+        </div>
+    </div>
+    <button class="btn-prime" id="openCamBtn" onclick="toggleCam()">Open Monitoring Lens</button>
+    <div id="dlArea"></div>
+
+    <div class="glass-card" style="margin-top:15px;">
+        <label>Tutorial Library</label>
+        <select id="vidSel" onchange="loadVid()">
+            <option value="dQw4w9WgXcQ">Neural Pathing Basics</option>
+            <option value="6n9Esf8G-m8">Pick Slanting Masterclass</option>
+            <option value="I0S8A_n5n60">Modal Visualisation</option>
+        </select>
+        <div class="video-wrap"><div id="player"></div></div>
+    </div>
+
+    <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+            <span id="bpmTxt" style="font-weight:bold; color:var(--accent)">120 BPM</span>
+            <button class="btn-sec" onclick="toggleMet()" id="metBtn">Metronome Off</button>
         </div>
         <input type="range" min="40" max="250" value="120" oninput="updateBpm(this.value)">
     </div>
 </div>
 
-<div id="tuner" class="screen">
-    <h2>Calibration</h2>
-    <div class="glass-card" style="text-align:center; padding: 40px 0;">
-        <div id="noteName" style="font-size: 5rem; font-weight: 900; color: var(--accent);">--</div>
-        <div style="width:100%; height:8px; background:#161b22; border-radius:4px; margin: 20px 0; position:relative; overflow:hidden;">
-            <div id="needle" style="position:absolute; left:50%; width:4px; height:100%; background:var(--accent); transition:0.1s; transform:translateX(-50%)"></div>
+<div id="tunerScreen" class="screen">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>Precision Tuner</h2>
+        <select id="tuneMode" style="width: auto; margin:0;" onchange="updateTuneTarget()">
+            <option>Chromatic</option><option>Guitar (E)</option><option>Drop D</option>
+        </select>
+    </div>
+    <div class="glass-card" style="text-align:center; padding: 50px 0;">
+        <div id="noteName" style="font-size: 6rem; font-weight: 900; color: #30363d;">--</div>
+        <div style="width:100%; height:12px; background:#161b22; border-radius:6px; margin: 30px 0; position:relative; overflow:hidden; border:1px solid var(--border);">
+            <div id="needle" style="position:absolute; left:50%; width:6px; height:100%; background:var(--accent); transition:0.1s; transform:translateX(-50%)"></div>
         </div>
-        <button class="btn-prime" id="tuneBtn" onclick="toggleTune()">Enable Mic</button>
+        <div id="tuneStatus" style="font-weight:900; text-transform:uppercase; letter-spacing:2px; font-size:0.8rem;">Ready</div>
+        <button class="btn-prime" style="margin-top:30px;" id="tuneBtn" onclick="toggleTune()">Enable Mic</button>
     </div>
 </div>
 
-<div id="config" class="screen">
-    <h2>Phase Architect</h2>
+<div id="library" class="screen">
+    <h2>Idea Vault</h2>
     <div class="glass-card">
-        <label>Select Index</label>
-        <select id="edIdx" onchange="loadEditor()">
-            <option value="0">Phase 1</option><option value="1">Phase 2</option>
-            <option value="2">Phase 3</option><option value="3">Phase 4</option>
-            <option value="4">Phase 5</option><option value="5">Phase 6</option>
-        </select>
-        <label>Phase Title</label>
-        <input type="text" id="edName">
-        <label>Start Week</label>
-        <input type="number" id="edWk">
-        <label>Strategy Breakdown</label>
-        <textarea id="edDesc" rows="3"></textarea>
-        <button class="btn-prime" onclick="saveEditor()">Update System Blueprint</button>
+        <label>Riffs & Melodic Ideas</label>
+        <button class="btn-sec" style="width:100%; margin-bottom:10px;" onclick="dictate('riffs')">🎤 Transcribe Riff Idea</button>
+        <textarea id="riffs" rows="4"></textarea>
+    </div>
+    <h2>Gallery</h2>
+    <div id="playbackList"></div>
+</div>
+
+<div id="config" class="screen">
+    <h2>System Architect</h2>
+    <div class="glass-card">
+        <select id="edIdx" onchange="loadEditor()"></select>
+        <label>Title</label><input type="text" id="edName">
+        <label>Start Week</label><input type="number" id="edWk">
+        <label>Workout A (CSV Drills, split by |)</label>
+        <textarea id="edA" rows="2"></textarea>
+        <label>Workout B (CSV Drills)</label>
+        <textarea id="edB" rows="2"></textarea>
+        <button class="btn-prime" onclick="saveEditor()">Apply Global Changes</button>
     </div>
 
-    <h2>Gear Notes & Transcribe</h2>
+    <h2>Gear Profile</h2>
     <div class="glass-card">
-        <button class="btn-sec" style="width:100%; margin-bottom:10px" onclick="runVoice()">🎤 Dictate Note</button>
-        <textarea id="gearNotes" rows="5" placeholder="Logs on strings, action, pedals..."></textarea>
+        <button class="btn-sec" style="width:100%; margin-bottom:10px;" onclick="dictate('gear')">🎤 Transcribe Gear Setup</button>
+        <textarea id="gear" rows="4"></textarea>
     </div>
 </div>
 
 <nav class="tab-bar">
     <div class="tab active" onclick="nav('vault', this)">VAULT</div>
     <div class="tab" onclick="nav('lab', this)">LAB</div>
-    <div class="tab" onclick="nav('tuner', this)">TUNER</div>
-    <div class="tab" onclick="nav('config', this)">CONFIG</div>
+    <div class="tab" onclick="nav('tunerScreen', this)">TUNER</div>
+    <div class="tab" onclick="nav('library', this)">IDEAS</div>
+    <div class="tab" onclick="nav('config', this)">EDIT</div>
 </nav>
 
 <script>
-    // --- PERSISTENCE ---
-    let blueprint = JSON.parse(localStorage.getItem('lab_bp_v18')) || [
-        {name: "Phase 1", desc: "Mechanical Sync", start: 1},
-        {name: "Phase 2", desc: "Diatonic Mapping", start: 5},
-        {name: "Phase 3", desc: "Speed Bursts", start: 9},
-        {name: "Phase 4", desc: "Subdivisions", start: 13},
-        {name: "Phase 5", desc: "Modal Intel", start: 17},
-        {name: "Phase 6", desc: "Repertoire", start: 21}
+    // --- GLOBAL STATE ---
+    let blueprint = JSON.parse(localStorage.getItem('os_bp')) || [
+        {name: "P1: Neural Sync", start:1, a:"Finger Independence (5m)|Min Movement Scale (5m)", b:"Spider Walk Alt (10m)|Slow Met Sync (10m)"},
+        {name: "P2: Diatonic", start:5, a:"Major Scale Circles (5m)|Interval 3rds (8m)", b:"Triad Shapes (10m)|Caged Connect (10m)"},
+        {name: "P3: Speed Burst", start:9, a:"3-Note Bursts (5m)|Escape Motion (10m)", b:"String Skipping (8m)|Tremolo Pick (5m)"},
+        {name: "P4: Rhythmic Ctrl", start:13, a:"Subdivision Switch (10m)|Syncopation (10m)", b:"Polyrhythm 3:4 (10m)|Gallops (5m)"},
+        {name: "P5: Modal Intel", start:17, a:"Dorian Mapping (10m)|Mixolydian Runs (10m)", b:"Lydian Tones (10m)|Phrygian Speed (10m)"},
+        {name: "P6: Performance", start:21, a:"Full Solo Run (15m)|Live Improvisation (15m)", b:"Dynamic Control (10m)|Vibrato/Bend (10m)"}
     ];
-    let state = { phase: 0, week: 1, take: parseInt(localStorage.getItem('tk_18') || '1'), logs: JSON.parse(localStorage.getItem('lg_18') || '[]') };
 
-    // --- NAVIGATION ---
+    let state = { phase: 0, week: 1, logs: JSON.parse(localStorage.getItem('os_logs')||'[]'), takes: parseInt(localStorage.getItem('os_tk')||'1') };
+    let chart;
+
+    // --- NAVIGATION & INIT ---
     function nav(id, el) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
-        if(isTuning && id !== 'tuner') toggleTune();
+        if(id === 'vault') updateChart();
     }
 
-    // --- ARCHITECT & VAULT ---
     function init() {
-        const pg = document.getElementById('phaseGrid');
-        pg.innerHTML = blueprint.map((p,i) => `<div class="chip ${state.phase===i?'active':''}" onclick="setPhase(${i})">${p.name}</div>`).join('');
-        
-        const wg = document.getElementById('weekGrid');
-        wg.innerHTML = "";
-        for(let i=blueprint[state.phase].start; i<blueprint[state.phase].start+4; i++){
-            wg.innerHTML += `<div class="chip ${state.week===i?'active':''}" onclick="setWeek(${i})">Wk ${i}</div>`;
-        }
-        renderLogs();
+        const vp = document.getElementById('vPhase');
+        const ei = document.getElementById('edIdx');
+        vp.innerHTML = ""; ei.innerHTML = "";
+        blueprint.forEach((p, i) => {
+            vp.innerHTML += `<div class="chip ${state.phase===i?'active':''}" onclick="setPhase(${i})">${p.name}</div>`;
+            ei.innerHTML += `<option value="${i}">${p.name}</option>`;
+        });
+        setPhase(state.phase);
+        loadEditor();
+        updateChart();
     }
-    function setPhase(i){ state.phase = i; init(); }
-    function setWeek(w){ state.week = w; init(); }
 
+    function setPhase(i) {
+        state.phase = i;
+        init();
+        const vw = document.getElementById('vWeek');
+        vw.innerHTML = "";
+        for(let w=blueprint[i].start; w < blueprint[i].start+4; w++) {
+            vw.innerHTML += `<div class="chip ${state.week===w?'active':''}" onclick="setWeek(${w})">Wk ${w}</div>`;
+        }
+        syncDrills();
+    }
+    function setWeek(w) { state.week = w; setPhase(state.phase); }
+
+    // --- ARCHITECT ---
     function loadEditor() {
         const p = blueprint[document.getElementById('edIdx').value];
         document.getElementById('edName').value = p.name;
         document.getElementById('edWk').value = p.start;
-        document.getElementById('edDesc').value = p.desc;
+        document.getElementById('edA').value = p.a;
+        document.getElementById('edB').value = p.b;
     }
     function saveEditor() {
         const i = document.getElementById('edIdx').value;
-        blueprint[i] = { name: document.getElementById('edName').value, start: parseInt(document.getElementById('edWk').value), desc: document.getElementById('edDesc').value };
-        localStorage.setItem('lab_bp_v18', JSON.stringify(blueprint));
-        init(); alert("Blueprint Live.");
+        blueprint[i] = { name: document.getElementById('edName').value, start: parseInt(document.getElementById('edWk').value), a: document.getElementById('edA').value, b: document.getElementById('edB').value };
+        localStorage.setItem('os_bp', JSON.stringify(blueprint));
+        init(); alert("System Updated.");
     }
 
-    // --- LAB TOOLS ---
-    let tRem=0, swSec=0, tIv, swIv, tRun=false, swRun=false;
-    function updateClockUI() {
+    // --- PROTOCOL ENGINE ---
+    function syncDrills() {
+        const w = document.getElementById('selWorkout').value;
+        const drills = w === 'Workout A' ? blueprint[state.phase].a.split('|') : blueprint[state.phase].b.split('|');
+        const es = document.getElementById('selExercise');
+        es.innerHTML = drills.map(d => `<option>${d}</option>`).join('');
+        applyDrill();
+    }
+
+    function applyDrill() {
+        const d = document.getElementById('selExercise').value;
+        const timeMatch = d.match(/\d+/);
+        tRem = timeMatch ? parseInt(timeMatch[0])*60 : 300;
+        document.getElementById('drillDetail').innerText = "Target Protocol: Focus on precision and form for " + (tRem/60) + " minutes.";
+        updateClocks();
+    }
+
+    // --- ANALYTICS ---
+    function addLog() {
+        const val = document.getElementById('manualBpm').value;
+        if(!val) return;
+        state.logs.push({date: new Date().toLocaleDateString(), bpm: parseInt(val)});
+        localStorage.setItem('os_logs', JSON.stringify(state.logs));
+        updateChart();
+    }
+    function updateChart() {
+        const ctx = document.getElementById('bpmChart').getContext('2d');
+        if(chart) chart.destroy();
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: state.logs.map(l => l.date),
+                datasets: [{ label: 'BPM', data: state.logs.map(l => l.bpm), borderColor: '#00f2ff', tension: 0.4 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: false } } }
+        });
+        document.getElementById('logList').innerHTML = state.logs.slice(-5).reverse().map(l => `<div class="log-item"><span>${l.date}</span><strong>${l.bpm} BPM</strong></div>`).join('');
+    }
+    function clearLogs() { state.logs = []; localStorage.setItem('os_logs', '[]'); updateChart(); }
+    function exportData() {
+        const csv = "Date,BPM\n" + state.logs.map(l => `${l.date},${l.bpm}`).join("\n");
+        const blob = new Blob([csv], {type:'text/csv'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'practice_data.csv'; a.click();
+    }
+
+    // --- TOOLS (TIMER/MET/CAM) ---
+    let tRem=0, swSec=0, tIv, swIv, tAct=false, swAct=false;
+    function toggleT() { tAct=!tAct; if(tAct) tIv=setInterval(()=>{if(tRem>0)tRem--;updateClocks()},1000); else clearInterval(tIv); document.getElementById('tBtn').innerText=tAct?'⏸':'▶'; }
+    function toggleSW() { swAct=!swAct; if(swAct) swIv=setInterval(()=>{swSec++;updateClocks()},1000); else clearInterval(swIv); document.getElementById('swBtn').innerText=swAct?'⏸':'▶'; }
+    function resetT() { tRem=0; updateClocks(); }
+    function resetSW() { swSec=0; updateClocks(); }
+    function updateClocks() {
         const f = (s) => Math.floor(s/60).toString().padStart(2,'0')+":"+(s%60).toString().padStart(2,'0');
-        document.getElementById('tDisp').innerText = f(tRem);
-        document.getElementById('swDisp').innerText = f(swSec);
-    }
-    function toggleTimer() {
-        tRun = !tRun;
-        if(tRun) tIv = setInterval(() => { if(tRem>0) tRem--; updateClockUI(); }, 1000);
-        else clearInterval(tIv);
-        document.getElementById('tBtn').innerText = tRun ? "Pause" : "Start";
-    }
-    function toggleSW() {
-        swRun = !swRun;
-        if(swRun) swIv = setInterval(() => { swSec++; updateClockUI(); }, 1000);
-        else clearInterval(swIv);
-        document.getElementById('swBtn').innerText = swRun ? "Pause" : "Start";
-    }
-    function resetT() { tRem = 0; updateClockUI(); }
-    function resetSW() { swSec = 0; updateClockUI(); }
-
-    function loadDrill(type) {
-        const d = { warmup:[5,"Neural Warmup","1mm finger lift limit."], speed:[10,"Speed Burst","Pick slanting 30 deg."], theory:[8,"Interval Mapping","Call intervals out loud."] }[type];
-        tRem = d[0]*60;
-        document.getElementById('drillText').style.display='block';
-        document.getElementById('dTitle').innerText = d[1];
-        document.getElementById('dBody').innerText = d[2];
-        updateClockUI();
+        document.getElementById('tDisp').innerText=f(tRem); document.getElementById('swDisp').innerText=f(swSec);
     }
 
-    // --- CAMERA RIG ---
+    let mCtx, mOn=false, mBpm=120, mNext=0, mIv;
+    function updateBpm(v) { mBpm=v; document.getElementById('bpmTxt').innerText=v+" BPM"; }
+    function toggleMet() { if(!mCtx) mCtx=new AudioContext(); mOn=!mOn; if(mOn){ mNext=mCtx.currentTime; tick(); } else clearTimeout(mIv); document.getElementById('metBtn').innerText=mOn?'Metronome On':'Metronome Off'; }
+    function tick() { while(mNext<mCtx.currentTime+0.1){ let o=mCtx.createOscillator(), g=mCtx.createGain(); o.frequency.value=800; g.gain.exponentialRampToValueAtTime(0.5,mNext); g.gain.exponentialRampToValueAtTime(0.001,mNext+0.05); o.connect(g); g.connect(mCtx.destination); o.start(mNext); o.stop(mNext+0.05); mNext+=60/mBpm; } mIv=setTimeout(tick,25); }
+
     let stream, recorder, chunks=[];
     async function toggleCam() {
-        const v = document.getElementById('vPrev');
+        const box = document.getElementById('camContainer'); const v = document.getElementById('vPrev');
         if(!stream) {
-            stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-            v.srcObject = stream; v.style.display = 'block';
-            document.getElementById('recBtn').style.display = 'block';
-            document.getElementById('camBtn').innerText = "Close Lens";
+            stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true}); v.srcObject = stream; box.style.display='block'; document.getElementById('openCamBtn').style.display='none';
         } else {
-            stream.getTracks().forEach(t=>t.stop()); stream=null;
-            v.style.display='none'; document.getElementById('recBtn').style.display='none';
-            document.getElementById('camBtn').innerText = "Open Lens";
+            stream.getTracks().forEach(t=>t.stop()); stream=null; box.style.display='none'; document.getElementById('openCamBtn').style.display='block';
         }
     }
     function toggleRec() {
-        const rBtn = document.getElementById('recBtn');
-        if(!recorder || recorder.state === 'inactive') {
-            chunks=[]; recorder = new MediaRecorder(stream);
-            recorder.ondataavailable = e => chunks.push(e.data);
-            recorder.onstop = () => {
+        const b = document.getElementById('recBtn');
+        if(!recorder || recorder.state==='inactive'){
+            chunks=[]; recorder=new MediaRecorder(stream); recorder.ondataavailable=e=>chunks.push(e.data);
+            recorder.onstop=()=>{
                 const url = URL.createObjectURL(new Blob(chunks, {type:'video/mp4'}));
-                const name = `Session_Wk${state.week}_Take${state.take}.mp4`;
-                document.getElementById('downloadLink').innerHTML = `<a href="${url}" download="${name}" class="btn-prime" style="display:block; text-align:center; text-decoration:none; background:var(--success); margin-bottom:10px;">Download ${name}</a>`;
-                state.take++; localStorage.setItem('tk_18', state.take);
+                const name = `Wk${state.week}_T${state.takes}.mp4`;
+                document.getElementById('dlArea').innerHTML = `<a href="${url}" download="${name}" class="btn-prime" style="background:var(--success); text-decoration:none; display:block; text-align:center; margin-top:10px;">Download ${name}</a>`;
+                state.takes++; localStorage.setItem('os_tk', state.takes);
             };
-            recorder.start(); rBtn.innerText = "Stop Rec";
-        } else { recorder.stop(); rBtn.innerText = "Rec Start"; }
+            recorder.start(); b.innerText="Stop";
+        } else { recorder.stop(); b.innerText="Rec Start"; }
     }
 
-    // --- TUNER & MET ---
-    let mCtx, mOn=false, mBpm=120, mNext=0, mIv;
-    function updateBpm(v){ mBpm=v; document.getElementById('bpmVal').innerText=v+" BPM"; }
-    function toggleMet(){
-        if(!mCtx) mCtx = new AudioContext();
-        mOn = !mOn; if(mOn){ mNext=mCtx.currentTime; tick(); } else clearTimeout(mIv);
-    }
-    function tick(){
-        while(mNext < mCtx.currentTime+0.1){
-            const o=mCtx.createOscillator(); const g=mCtx.createGain();
-            o.frequency.value=800; g.gain.exponentialRampToValueAtTime(0.5,mNext);
-            g.gain.exponentialRampToValueAtTime(0.001,mNext+0.05);
-            o.connect(g); g.connect(mCtx.destination); o.start(mNext); o.stop(mNext+0.05);
-            mNext += 60/mBpm;
-        }
-        mIv = setTimeout(tick, 25);
-    }
-
-    let tCtx, tAnalys, isTuning=false, tStream;
-    async function toggleTune(){
+    // --- TUNER (Chromatic + Modes) ---
+    let tCtx, tAnalys, tStream, isTuning=false;
+    async function toggleTune() {
         if(!isTuning){
-            tCtx = new AudioContext(); tStream = await navigator.mediaDevices.getUserMedia({audio:true});
-            const src = tCtx.createMediaStreamSource(tStream);
-            tAnalys = tCtx.createAnalyser(); tAnalys.fftSize = 2048;
-            src.connect(tAnalys); isTuning=true; runTuner();
-        } else { tStream.getTracks().forEach(t=>t.stop()); tCtx.close(); isTuning=false; }
+            tCtx=new AudioContext(); tStream=await navigator.mediaDevices.getUserMedia({audio:true});
+            const src=tCtx.createMediaStreamSource(tStream); tAnalys=tCtx.createAnalyser(); tAnalys.fftSize=2048;
+            src.connect(tAnalys); isTuning=true; runTuning(); document.getElementById('tuneBtn').innerText="Stop";
+        } else { tStream.getTracks().forEach(t=>t.stop()); tCtx.close(); isTuning=false; document.getElementById('tuneBtn').innerText="Enable Mic"; }
     }
-    function runTuner(){
+    function runTuning() {
         if(!isTuning) return;
         let buf = new Float32Array(2048); tAnalys.getFloatTimeDomainData(buf);
         let freq = (function(buf, sr) {
@@ -307,34 +350,32 @@
             let c=new Float32Array(buf.length);
             for(let j=0;j<buf.length;j++) for(let i=0;i<buf.length-j;i++) c[j]+=buf[i]*buf[i+j];
             let d=0; while(c[d]>c[d+1]) d++;
-            let mv=-1, mp=-1;
-            for(let i=d;i<buf.length;i++) if(c[i]>mv){ mv=c[i]; mp=i; }
+            let mv=-1, mp=-1; for(let i=d;i<buf.length;i++) if(c[i]>mv){ mv=c[i]; mp=i; }
             return sr/mp;
         })(buf, tCtx.sampleRate);
-        if(freq !== -1){
+        if(freq!==-1){
             let n = 12*(Math.log(freq/440)/Math.log(2))+69;
-            document.getElementById('noteName').innerText = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"][Math.round(n)%12];
-            document.getElementById('needle').style.left = (50 + (n-Math.round(n))*50) + "%";
+            let note = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"][Math.round(n)%12];
+            let diff = (n - Math.round(n)) * 50;
+            document.getElementById('noteName').innerText=note;
+            document.getElementById('noteName').style.color = Math.abs(diff) < 5 ? 'var(--success)' : 'var(--danger)';
+            document.getElementById('needle').style.left=(50+diff)+"%";
+            document.getElementById('tuneStatus').innerText = Math.abs(diff) < 5 ? "In Tune" : (diff > 0 ? "Sharp" : "Flat");
         }
-        requestAnimationFrame(runTuner);
+        requestAnimationFrame(runTuning);
     }
 
-    // --- SYSTEM ---
-    function saveLog(){
-        const bpm = document.getElementById('logBPM').value; if(!bpm) return;
-        state.logs.unshift({wk: state.week, type: document.getElementById('logType').value, bpm: bpm});
-        localStorage.setItem('lg_18', JSON.stringify(state.logs)); renderLogs();
+    // --- UTILS ---
+    function loadVid() {
+        const id = document.getElementById('vidSel').value;
+        document.getElementById('player').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
     }
-    function renderLogs(){
-        document.getElementById('logHistory').innerHTML = state.logs.slice(0,5).map(l => `<div style="display:flex; justify-content:space-between; padding:10px; border:1px solid var(--border); border-radius:8px; margin-bottom:5px; font-size:0.75rem;"><span>Wk ${l.wk} • ${l.type}</span><strong>${l.bpm} BPM</strong></div>`).join('');
-    }
-    function runVoice(){
-        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        rec.start(); rec.onresult = (e) => { document.getElementById('gearNotes').value += e.results[0][0].transcript + " "; };
+    function dictate(id) {
+        const r = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        r.start(); r.onresult=(e)=> document.getElementById(id).value += e.results[0][0].transcript + " ";
     }
 
-    init();
-    loadEditor();
+    window.onload = () => { init(); loadVid(); };
 </script>
 </body>
 </html>
