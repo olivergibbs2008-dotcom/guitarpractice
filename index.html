@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Guitar Practice Lab: Architect</title>
+    <style>
+        :root { --bg: #030508; --glass: rgba(15, 20, 30, 0.9); --accent: #00f2ff; --secondary: #7000ff; --text: #e0e6ed; --muted: #64748b; --danger: #ff4757; --success: #2ed573; --border: rgba(0, 242, 255, 0.2); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px 10px 110px; line-height: 1.5; }
+        
+        .container { max-width: 480px; margin: 0 auto; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(25px); border-radius: 28px; padding: 22px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        
+        /* Thematic Elements */
+        .custom-label { font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: block; padding-left: 5px; }
+        select, input[type="text"], input[type="number"], textarea { width: 100%; background: #0a0f18; border: 2px solid var(--border); color: var(--text); padding: 14px; border-radius: 16px; font-size: 1rem; appearance: none; font-weight: 600; margin-bottom: 12px; transition: 0.2s; }
+        select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300f2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 15px center; }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 15px rgba(0,242,255,0.15); }
+
+        /* Navigation */
+        .tab-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 95px; background: rgba(5, 8, 12, 0.98); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .tab-item { color: var(--muted); font-size: 0.65rem; font-weight: 800; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
+        .tab-icon { font-size: 1.6rem; margin-bottom: 4px; opacity: 0.4; }
+        .tab-item.active { color: var(--accent); }
+        .tab-item.active .tab-icon { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 5px var(--accent)); }
+        
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Buttons */
+        .btn-primary { background: var(--accent); color: #000; width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,242,255,0.2); }
+        .btn-ghost { background: transparent; border: 1px solid var(--muted); color: var(--muted); padding: 10px; border-radius: 12px; font-weight: 800; font-size: 0.7rem; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-pill { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 16px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+
+        /* Specialized UI */
+        .timer-val { font-size: 5rem; font-weight: 900; text-align: center; font-variant-numeric: tabular-nums; margin: 10px 0; letter-spacing: -3px; }
+        .mission-box { background: rgba(0,242,255,0.05); border: 1px solid var(--accent); border-radius: 20px; padding: 20px; margin-top: 10px; }
+        .progress-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--secondary), var(--accent)); width: 0%; transition: 1s ease; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div id="plan" class="screen active">
+        <h2>Practice <span style="color:var(--accent)">Plan</span></h2>
+        
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; font-weight:900; font-size:0.7rem;">
+                <span>OVERALL PROGRESS</span>
+                <span id="percText" style="color:var(--accent)">0%</span>
+            </div>
+            <div class="progress-bar"><div id="percBar" class="progress-fill"></div></div>
+        </div>
+
+        <div class="glass-card">
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:12px;">
+                <div>
+                    <span class="custom-label">Phase Selection</span>
+                    <select id="phaseSel" onchange="initWeeks()"></select>
+                </div>
+                <div>
+                    <span class="custom-label">Week</span>
+                    <select id="weekSel" onchange="updateUI()"></select>
+                </div>
+            </div>
+            
+            <span class="custom-label">Day</span>
+            <select id="daySel" onchange="updateUI()">
+                <option value="1">Day 1</option>
+                <option value="2">Day 2</option>
+                <option value="3">Day 3</option>
+                <option value="4">Day 4</option>
+                <option value="5">Day 5 (Recording/Review)</option>
+            </select>
+
+            <div class="mission-box">
+                <div id="activePhaseTitle" style="font-size:0.7rem; font-weight:900; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">PHASE NAME</div>
+                <div id="missionBody" style="font-size:1rem; font-weight:600; line-height:1.4;">Mission Loading...</div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <span class="custom-label">Session Data</span>
+            <input type="number" id="dayBpm" placeholder="Enter BPM Reached">
+            <button class="btn-primary" onclick="saveDayLog()">LOG PROGRESS</button>
+        </div>
+    </div>
+
+    <div id="lab" class="screen">
+        <h2>Practice <span style="color:var(--accent)">Lab</span></h2>
+        <div class="glass-card" style="text-align:center;">
+            <div id="blockLabel" style="font-weight:900; color:var(--muted); font-size:0.75rem;">SELECT DRILL</div>
+            <div class="timer-val" id="timer">00:00</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+                <button class="btn-pill" onclick="setTimer(4, 'Warmup')">4m Warmup</button>
+                <button class="btn-pill" onclick="setTimer(8, 'Overload')">8m Tech</button>
+                <button class="btn-pill" onclick="setTimer(6, 'Harmonic')">6m Harm</button>
+                <button class="btn-pill" onclick="setTimer(6, 'Rhythmic')">6m Rhythm</button>
+            </div>
+            <button class="btn-primary" id="tBtn" onclick="toggleT()">START SESSION</button>
+        </div>
+
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-weight:900; color:var(--accent); font-size:1.2rem;" id="mBpmVal">120 BPM</span>
+                <button class="btn-pill" onclick="toggleM()" id="mPlayBtn">START CLICK</button>
+            </div>
+            <input type="range" min="40" max="220" value="120" style="width:100%; accent-color:var(--accent);" oninput="updateMBpm(this.value)">
+        </div>
+    </div>
+
+    <div id="architect" class="screen">
+        <h2>Blueprint <span style="color:var(--accent)">Architect</span></h2>
+        <div class="glass-card">
+            <span class="custom-label">Select Phase to Edit</span>
+            <select id="editPhaseIdx" onchange="loadPhaseToEditor()">
+                <option value="0">Phase 1</option>
+                <option value="1">Phase 2</option>
+                <option value="2">Phase 3</option>
+                <option value="3">Phase 4</option>
+                <option value="4">Phase 5</option>
+                <option value="5">Phase 6</option>
+            </select>
+            
+            <span class="custom-label">Phase Title</span>
+            <input type="text" id="editPhaseName" placeholder="e.g. Technical Ceiling Reset">
+            
+            <span class="custom-label">Phase Focus/Overview</span>
+            <textarea id="editPhaseDesc" style="height:60px;" placeholder="Monthly Focus..."></textarea>
+            
+            <span class="custom-label">Daily Missions</span>
+            <input type="text" id="m1" placeholder="Day 1 Mission">
+            <input type="text" id="m2" placeholder="Day 2 Mission">
+            <input type="text" id="m3" placeholder="Day 3 Mission">
+            <input type="text" id="m4" placeholder="Day 4 Mission">
+            <input type="text" id="m5" placeholder="Day 5 Mission">
+            
+            <button class="btn-primary" style="background:var(--success)" onclick="saveCustomBlueprint()">UPDATE BLUEPRINT</button>
+            <button class="btn-ghost" onclick="resetBlueprint()">RESTORE FACTORY BLUEPRINT</button>
+        </div>
+    </div>
+
+    <div id="write" class="screen">
+        <h2>Scratchpad</h2>
+        <div class="glass-card">
+            <textarea id="notes" style="height:350px;" placeholder="Tabs, lyrics, or scale diagrams..." oninput="autoSaveNotes()"></textarea>
+        </div>
+    </div>
+
+</div>
+
+<nav class="tab-bar">
+    <div class="tab-item active" onclick="nav('plan', this)"><span class="tab-icon">📋</span>PLAN</div>
+    <div class="tab-item" onclick="nav('lab', this)"><span class="tab-icon">🧪</span>LAB</div>
+    <div class="tab-item" onclick="nav('architect', this)"><span class="tab-icon">🛠️</span>EDIT</div>
+    <div class="tab-item" onclick="nav('write', this)"><span class="tab-icon">✍️</span>WRITE</div>
+</nav>
+
+<script>
+    // --- BLUEPRINT DATA ENGINE ---
+    const defaultBlueprint = [
+        { name: "Phase 1: Technical Ceiling Reset", desc: "Strict alternate picking, scale mapping[cite: 12].", daily: ["Major Scale Mapping", "Minor Scale Patterns", "Pentatonic Links", "Triplet Accuracy", "Burst Drills"] },
+        { name: "Phase 2: Harmonic Expansion", desc: "Modal fluency (Dorian, Mixolydian, Lydian, Phrygian)[cite: 13].", daily: ["Dorian Mode", "Mixolydian Dominants", "Lydian Brightness", "Phrygian Tension", "Target Tones"] },
+        { name: "Phase 3: Rhythmic Authority", desc: "Odd groupings, 5/4 and 7/8 feel control[cite: 14].", daily: ["7/8 Riff Feel", "5/4 Groove", "Sixplet Groups", "Syncopation", "Rhythm Improv"] },
+        { name: "Phase 4: Speed + Musical Control", desc: "Burst training, advanced arpeggios[cite: 15].", daily: ["Sweep Picking", "String Skipping", "Legato Speed", "Speed Bursts", "Recording Week"] },
+        { name: "Phase 5: Modern Rock Mastery", desc: "Hybrid picking, upper-structure triads[cite: 16].", daily: ["Hybrid Picking", "Upper Triads", "Modern Lines", "Outside Playing", "Advanced Phrasing"] },
+        { name: "Phase 6: Professional Integration", desc: "Full-system improvisation, motif development[cite: 17].", daily: ["Motif Writing", "Solo Flow", "Dynamic Range", "Creative Writing", "Final Video Recording"] }
+    ];
+
+    let activeBlueprint = JSON.parse(localStorage.getItem('gtr_blueprint_v3')) || defaultBlueprint;
+
+    // --- NAVIGATION ---
+    function nav(id, el) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+    }
+
+    // --- ARCHITECT LOGIC ---
+    function loadPhaseToEditor() {
+        const idx = document.getElementById('editPhaseIdx').value;
+        const p = activeBlueprint[idx];
+        document.getElementById('editPhaseName').value = p.name;
+        document.getElementById('editPhaseDesc').value = p.desc;
+        p.daily.forEach((m, i) => document.getElementById('m' + (i+1)).value = m);
+    }
+
+    function saveCustomBlueprint() {
+        const idx = document.getElementById('editPhaseIdx').value;
+        activeBlueprint[idx] = {
+            name: document.getElementById('editPhaseName').value,
+            desc: document.getElementById('editPhaseDesc').value,
+            daily: [
+                document.getElementById('m1').value,
+                document.getElementById('m2').value,
+                document.getElementById('m3').value,
+                document.getElementById('m4').value,
+                document.getElementById('m5').value
+            ]
+        };
+        localStorage.setItem('gtr_blueprint_v3', JSON.stringify(activeBlueprint));
+        alert("Blueprint Updated! Plan screen refreshed.");
+        initPhases();
+        updateUI();
+    }
+
+    function resetBlueprint() {
+        if(confirm("Restore the original 24-week plan?")) {
+            activeBlueprint = [...defaultBlueprint];
+            localStorage.setItem('gtr_blueprint_v3', JSON.stringify(activeBlueprint));
+            loadPhaseToEditor();
+            initPhases();
+            updateUI();
+        }
+    }
+
+    // --- PLAN LOGIC ---
+    function initPhases() {
+        const pSel = document.getElementById('phaseSel');
+        pSel.innerHTML = "";
+        activeBlueprint.forEach((p, i) => {
+            let o = document.createElement('option'); o.value = i; o.innerText = p.name;
+            pSel.appendChild(o);
+        });
+        initWeeks();
+    }
+
+    function initWeeks() {
+        const pIdx = document.getElementById('phaseSel').value;
+        const wSel = document.getElementById('weekSel');
+        wSel.innerHTML = "";
+        const start = (pIdx * 4) + 1;
+        for(let i=start; i < start+4; i++) {
+            let o = document.createElement('option'); o.value = i; o.innerText = i;
+            wSel.appendChild(o);
+        }
+        updateUI();
+    }
+
+    function updateUI() {
+        const pIdx = document.getElementById('phaseSel').value;
+        const dayIdx = document.getElementById('daySel').value - 1;
+        const week = document.getElementById('weekSel').value;
+        
+        const phase = activeBlueprint[pIdx];
+        document.getElementById('activePhaseTitle').innerText = phase.name;
+        document.getElementById('missionBody').innerText = phase.daily[dayIdx];
+        
+        // Progress Logic
+        const progress = Math.round((week / 24) * 100);
+        document.getElementById('percBar').style.width = progress + "%";
+        document.getElementById('percText').innerText = progress + "% COMPLETE";
+    }
+
+    function saveDayLog() {
+        const w = document.getElementById('weekSel').value;
+        const bpm = document.getElementById('dayBpm').value;
+        const logs = JSON.parse(localStorage.getItem('gtr_logs') || '{}');
+        logs[w] = bpm;
+        localStorage.setItem('gtr_logs', JSON.stringify(logs));
+        alert("Logged: Week " + w + " at " + bpm + " BPM");
+    }
+
+    // --- TIMER & METRO ---
+    let tLeft = 0, tAct = false, tIv;
+    function setTimer(m, l) { tLeft = m * 60; document.getElementById('blockLabel').innerText = l.toUpperCase(); renderT(); }
+    function renderT() {
+        const m = Math.floor(tLeft/60), s = tLeft%60;
+        document.getElementById('timer').innerText = `${m}:${s<10?'0'+s:s}`;
+    }
+    function toggleT() {
+        if(!tAct) {
+            if(tLeft<=0) return; tAct = true;
+            tIv = setInterval(() => { tLeft--; renderT(); if(tLeft<=0){ clearInterval(tIv); alert("Block Done!"); tAct=false; } }, 1000);
+            document.getElementById('tBtn').innerText = "PAUSE";
+        } else { clearInterval(tIv); tAct = false; document.getElementById('tBtn').innerText = "RESUME"; }
+    }
+
+    let mCtx, mBpm = 120, mOn = false, mNext = 0, mIv;
+    function updateMBpm(v) { mBpm = v; document.getElementById('mBpmVal').innerText = v + " BPM"; }
+    function toggleM() {
+        if(!mCtx) mCtx = new AudioContext();
+        mOn = !mOn;
+        if(mOn) { mNext = mCtx.currentTime; mTick(); document.getElementById('mPlayBtn').innerText = "STOP CLICK"; }
+        else { clearTimeout(mIv); document.getElementById('mPlayBtn').innerText = "START CLICK"; }
+    }
+    function mTick() {
+        while(mNext < mCtx.currentTime + 0.1) {
+            const o = mCtx.createOscillator(); const g = mCtx.createGain();
+            o.frequency.value = 1000; g.gain.exponentialRampToValueAtTime(1, mNext);
+            g.gain.exponentialRampToValueAtTime(0.001, mNext + 0.05);
+            o.connect(g); g.connect(mCtx.destination); o.start(mNext); o.stop(mNext + 0.05);
+            mNext += 60 / mBpm;
+        }
+        mIv = setTimeout(mTick, 25);
+    }
+
+    function autoSaveNotes() { localStorage.setItem('gtr_notes_arch', document.getElementById('notes').value); }
+    document.getElementById('notes').value = localStorage.getItem('gtr_notes_arch') || '';
+
+    // Init App
+    initPhases();
+    loadPhaseToEditor();
+</script>
+</body>
+</html>
